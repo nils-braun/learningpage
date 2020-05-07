@@ -96,7 +96,7 @@ class Instructor(db.Model):
     first_name = db.Column(db.String, nullable=False)
     last_name = db.Column(db.String, nullable=False)
     description = db.Column(db.String, default="", nullable=False)
-    logo_url = db.Column(db.String, nullable=True)
+    image_url = db.Column(db.String, nullable=True)
 
     content = db.relationship("Content", back_populates="instructors", secondary="content_instructor_association")
 
