@@ -2,3 +2,6 @@ __pycache__
 .vscode
 .conda-env
 *.db
+jupyterhub-proxy.pid
+jupyterhub.sqlite
+jupyterhub_cookie_secret
