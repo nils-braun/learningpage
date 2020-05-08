@@ -39,8 +39,12 @@ GET /api/v1/content/<ID>
 GET /api/v1/content/<ID>/submissions
 {
     date: date,
-    feedbackUrl: string,
-    score: float,
+    maxScore: float,
+    notebooks: [{
+        feedbackUrl: string,
+        name: string, # name of the notebook
+        maxScore: float,
+    }]
 }
 
 

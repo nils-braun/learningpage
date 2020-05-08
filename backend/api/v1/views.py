@@ -1,9 +1,10 @@
 import json
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, abort, send_file, url_for
+from werkzeug import exceptions
 
 from utils import authenticated
-from grader_utils import get_assignment
+import grader_utils
 from .models import Content
 
 
@@ -30,10 +31,7 @@ def show_content(user, slug):
     has_assignment = bool(content.assignment_slug)
 
     if has_assignment:
-        assignment = get_assignment(content.assignment_slug)
-        if not assignment:
-            raise KeyError(f"Unknown assignment {assignment}")
-        max_score = assignment["max_score"]
+        max_score = grader_utils.get_max_score(user["name"], content.assignment_slug)
     else:
         max_score = None
 
@@ -70,3 +68,51 @@ def show_content(user, slug):
 
     return jsonify(return_dict)
 
+
+@blueprint.route("/content/<slug>/submissions")
+@authenticated
+def show_submissions(user, slug):
+    content = Content.query.filter_by(slug=slug).first_or_404()
+    assignment_slug = content.assignment_slug
+
+    submissions = grader_utils.get_submissions(user["name"], assignment_slug)
+
+    if not submissions:
+        abort(404)
+
+    return jsonify(
+        {
+            "date": submissions["timestamp"],
+            "feedbackUrl": "",
+            "maxScore": grader_utils.get_max_score_for(submissions),
+            "notebooks": [{
+                "name": notebook["name"],
+                "maxScore": grader_utils.get_max_score_for(notebook),
+                "feedbackUrl": url_for(".get_feedback", slug=notebook["id"]),
+            } for notebook in submissions["notebooks"]]
+        }
+    )
+
+
+@blueprint.route("/feedback/<slug>")
+@authenticated
+def get_feedback(user, slug):
+    submitted_notebook = grader_utils.get_submitted_notebook(slug)
+
+    if not submitted_notebook:
+        abort(404)
+
+    student_slug = user["name"]
+
+    if not submitted_notebook["student"] == student_slug:
+        abort(403)
+
+    assignment_slug = submitted_notebook["assignment_slug"]
+    notebook_name = submitted_notebook["name"]
+
+    feedback_path = grader_utils.get_feedback_path(student_slug, assignment_slug, notebook_name)
+
+    if not feedback_path:
+        abort(404)
+
+    return send_file(feedback_path)
