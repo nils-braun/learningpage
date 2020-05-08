@@ -27,7 +27,6 @@ class Content(db.Model):
         IdentifierType, db.ForeignKey('content_groups.slug'), nullable=False)
     sort_number = db.Column(db.Integer, default=0, nullable=False)
     level = db.Column(db.String(50), default="", nullable=False)
-    max_score = db.Column(db.Float, nullable=True)
     assignment_slug = db.Column(db.String, nullable=True)
 
     content_group = db.relationship("ContentGroup", back_populates="contents")

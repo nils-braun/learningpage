@@ -3,6 +3,7 @@ import json
 from flask import Blueprint, jsonify
 
 from utils import authenticated
+from grader_utils import get_assignment
 from .models import Content
 
 
@@ -26,6 +27,15 @@ def show_user(user):
 @authenticated
 def show_content(user, slug):
     content = Content.query.filter_by(slug=slug).first_or_404()
+    has_assignment = bool(content.assignment_slug)
+
+    if has_assignment:
+        assignment = get_assignment(content.assignment_slug)
+        if not assignment:
+            raise KeyError(f"Unknown assignment {assignment}")
+        max_score = assignment["max_score"]
+    else:
+        max_score = None
 
     return_dict = {
         "slug": content.slug,
@@ -49,8 +59,8 @@ def show_content(user, slug):
         "contentGroupSlug": content.content_group_slug,
         "course": content.course.name,
         "courseSlug": content.course_slug,
-        "maxScore": content.max_score,
-        "hasAssignment": bool(content.assignment_slug),
+        "maxScore": max_score,
+        "hasAssignment": has_assignment,
         "facts": [{
           "key": fact.key,
           "value": fact.value,
