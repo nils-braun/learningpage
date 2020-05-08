@@ -39,7 +39,8 @@ content = Content(slug="pandas-io", title="Pandas IO",
                     'Learn about how to process data and reshape it\n'
                     'Learn how data can be encoded in various ways\n'
                     'You will see what schema evolution means and why it is important for your data',
-                  level="beginner", skills=skills, content_group=content_group, instructors=instructors)
+                  level="beginner", skills=skills, content_group=content_group, instructors=instructors,
+                  assignment_slug="pandas-io")
 
 facts = [
     Fact(slug="a", content=content, key="prerequirements", value='You should  have beginner level experience with Python.'),
