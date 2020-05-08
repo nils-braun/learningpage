@@ -45,7 +45,7 @@ class Content(db.Model):
         return self.content_group.course
 
     def __repr__(self):
-        return f"<Content(name='{self.name}', content_group='{self.content_group.name}', course='{self.course.name}')>"
+        return f"<Content(title='{self.title}', content_group='{self.content_group.name}', course='{self.course.name}')>"
 
 
 class ContentGroup(db.Model):
