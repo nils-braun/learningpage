@@ -28,6 +28,7 @@ class Content(db.Model):
     sort_number = db.Column(db.Integer, default=0, nullable=False)
     level = db.Column(db.String(50), default="", nullable=False)
     assignment_slug = db.Column(db.String, nullable=True)
+    git_url = db.Column(db.String, nullable=True)
 
     content_group = db.relationship("ContentGroup", back_populates="contents")
     instructors = db.relationship(
