@@ -1,6 +1,8 @@
 import json
+import os
+from urllib.parse import urljoin
 
-from flask import Blueprint, jsonify, abort, send_file, url_for
+from flask import Blueprint, jsonify, abort, send_file, url_for, current_app, redirect, request
 from werkzeug import exceptions
 
 from utils import authenticated
@@ -94,6 +96,26 @@ def show_submissions(user, slug):
     )
 
 
+@blueprint.route("/content/<slug>/start")
+@authenticated
+def start_content(user, slug):
+    content = Content.query.filter_by(slug=slug).first_or_404()
+    assignment_slug = content.assignment_slug
+
+    student_slug = user["name"]
+
+    base_folder = current_app.config.get("USER_BASE_FOLDER", ".")
+
+    notebook_folder = os.path.join(base_folder, student_slug, assignment_slug)
+
+    if os.path.exists(notebook_folder):
+        return redirect(os.path.join(request.host_url, "user-redirect/tree", assignment_slug))
+    elif content.git_url:
+        return redirect(content.git_url)
+    else:
+        abort(404)
+
+
 @blueprint.route("/feedback/<slug>")
 @authenticated
 def get_feedback(user, slug):
@@ -116,3 +138,4 @@ def get_feedback(user, slug):
         abort(404)
 
     return send_file(feedback_path)
+
