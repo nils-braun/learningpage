@@ -30,6 +30,15 @@ services:
       POSTGRES_PASSWORD: postgres-password
     volumes:
       - "./postgres/init_db.sh:/docker-entrypoint-initdb.d/init_db.sh:ro"
+  grader-notebook:
+    image: grader-notebook:local-dev
+    build: grader-notebook
+    command: ["jupyterhub-singleuser", "--group=graders"]
+    environment:
+      JUPYTERHUB_SERVICE_PREFIX: /services/grader-notebook/
+      JUPYTERHUB_API_TOKEN: even-more-secret-key
+      JUPYTERHUB_API_URL: http://jupyterhub:8081/hub/api
+      JUPYTERHUB_CLIENT_ID: grader-notebook
 
 volumes:
   grader_content:

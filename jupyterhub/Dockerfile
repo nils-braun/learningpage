@@ -1,4 +1,6 @@
-FROM jupyterhub/jupyterhub:1.2
+FROM jupyterhub/jupyterhub
 
 RUN useradd grader \
-    && echo "grader:grader" | chpasswd
+    && echo "grader:grader" | chpasswd \
+    && useradd student \
+    && echo "student:student" | chpasswd
