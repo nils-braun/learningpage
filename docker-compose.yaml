@@ -1,0 +1,36 @@
+version: '3'
+services:
+  backend:
+    image: learningpage-backend:local-dev
+    build: backend
+    environment:
+      JUPYTERHUB_SERVICE_PREFIX: /services/learningpage/
+      JUPYTERHUB_API_TOKEN: very-secret-very-safe
+      JUPYTERHUB_API_URL: http://jupyterhub:8081/hub/api
+      NBGRADER_DIR: /var/lib/
+      CONTENT_DATABASE_STRING: postgres://content:content@postgres/content
+      GRADER_DATABASE_STRING: postgres://grader:grader@postgres/grader
+    volumes:
+      - grader_content:/var/lib/content
+      - grader_exchange:/var/lib/exchange
+      - ./backend:/app:ro
+    depends_on:
+      - postgres
+  jupyterhub:
+    image: custom-jupyterhub:local-dev
+    build: jupyterhub
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro"
+    restart: unless-stopped
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres-password
+    volumes:
+      - "./postgres/init_db.sh:/docker-entrypoint-initdb.d/init_db.sh:ro"
+
+volumes:
+  grader_content:
+  grader_exchange:

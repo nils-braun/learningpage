@@ -1,0 +1,7 @@
+flask
+flask-migrate
+flask-sqlalchemy
+nbgrader
+uwsgi
+jupyterhub
+psycopg2

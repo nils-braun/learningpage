@@ -2,6 +2,9 @@
 
 Bringing a frontpage to jupyterhub.
 
+    docker-compose up -d
+    docker-compose exec backend python3 populate_database.py
+
 ## Backend
 
 GET /api/v1/content/<ID>
