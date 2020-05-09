@@ -1,18 +1,26 @@
 version: '3'
 services:
+  # Backend Image for the API
   backend:
     image: learningpage-backend:local-dev
     build: backend
     environment:
+      # Prefix for the API webservice. Has to be the same as the service name in the jupyterhub config.
       JUPYTERHUB_SERVICE_PREFIX: /services/learningpage/
+      # Token to access the jupyterhub API. Has to be the same as in the jupyterhub config.
       JUPYTERHUB_API_TOKEN: very-secret-very-safe
+      # Where to find the jupyterhub API
       JUPYTERHUB_API_URL: http://jupyterhub:8081/hub/api
-      NBGRADER_DIR: /var/lib/
+      # sqlalchemy string for the content database
       CONTENT_DATABASE_STRING: postgres://content:content@postgres/content
+      # sqlalchemy string for the nbgrader database
       GRADER_DATABASE_STRING: postgres://grader:grader@postgres/grader
     volumes:
+      # shared volume for the nbgrader content
       - grader_content:/var/lib/content
+      # shared volume for the nbgrader exchange
       - grader_exchange:/var/lib/exchange
+      # for local testing: bind-mount the app folder
       - ./backend:/app:ro
     depends_on:
       - postgres
@@ -39,7 +47,12 @@ services:
       JUPYTERHUB_API_TOKEN: even-more-secret-key
       JUPYTERHUB_API_URL: http://jupyterhub:8081/hub/api
       JUPYTERHUB_CLIENT_ID: grader-notebook
-
+      GRADER_DATABASE_STRING: postgres://grader:grader@postgres/grader
+    volumes:
+      - grader_content:/home/jovyan/content
+      - grader_exchange:/home/jovyan/exchange
+    depends_on:
+      - backend
 volumes:
   grader_content:
   grader_exchange:

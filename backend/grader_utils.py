@@ -8,12 +8,10 @@ from nbgrader.apps.api import NbGraderAPI
 
 def _get_grader_app():
     # Create the nbgrader config "on the fly" out of the env variables
-    nbgrader_dir = os.environ.get('NBGRADER_DIR')
-
     c = Config()
     c.CourseDirectory.course_id = "course"
-    c.CourseDirectory.root = os.path.join(nbgrader_dir, "content")
-    c.Exchange.root = os.path.join(nbgrader_dir, "exchange")
+    c.CourseDirectory.root = "/var/lib/content"
+    c.Exchange.root = "/var/lib/exchange"
     c.CourseDirectory.db_url = os.environ.get('GRADER_DATABASE_STRING')
 
     grader_app = NbGrader(config=c)
