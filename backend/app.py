@@ -7,8 +7,8 @@ from flask_migrate import Migrate
 from utils import PrefixMiddleware
 
 
-prefix = os.environ.get('JUPYTERHUB_SERVICE_PREFIX', '/')
-content_database_string = os.environ.get('CONTENT_DATABASE_STRING', 'sqlite:///content_database.db')
+prefix = os.environ.get('JUPYTERHUB_SERVICE_PREFIX')
+content_database_string = os.environ.get('CONTENT_DATABASE_STRING')
 
 db = SQLAlchemy()
 

@@ -1,4 +1,5 @@
 import os
+from traitlets.config.loader import Config
 
 from nbgrader.apps import NbGrader
 from nbgrader.api import Gradebook, MissingEntry
@@ -6,7 +7,16 @@ from nbgrader.apps.api import NbGraderAPI
 
 
 def _get_grader_app():
-    grader_app = NbGrader()
+    # Create the nbgrader config "on the fly" out of the env variables
+    nbgrader_dir = os.environ.get('NBGRADER_DIR')
+
+    c = Config()
+    c.CourseDirectory.course_id = "course"
+    c.CourseDirectory.root = os.path.join(nbgrader_dir, "content")
+    c.Exchange.root = os.path.join(nbgrader_dir, "exchange")
+    c.CourseDirectory.db_url = os.environ.get('GRADER_DATABASE_STRING')
+
+    grader_app = NbGrader(config=c)
     grader_app.initialize()
     grader_app.notebook_dir = "."
 
