@@ -85,7 +85,6 @@ def show_submissions(user, slug):
     return jsonify(
         {
             "date": submissions["timestamp"],
-            "feedbackUrl": "",
             "maxScore": grader_utils.get_max_score_for(submissions),
             "notebooks": [{
                 "name": notebook["name"],
