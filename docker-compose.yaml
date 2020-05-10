@@ -15,11 +15,15 @@ services:
       CONTENT_DATABASE_STRING: postgres://content:content@postgres/content
       # sqlalchemy string for the nbgrader database
       GRADER_DATABASE_STRING: postgres://grader:grader@postgres/grader
+      # Where to look for the userhome directories
+      USER_BASE_FOLDER: /userhomes
     volumes:
       # shared volume for the nbgrader content
       - grader_content:/var/lib/content
       # for local testing: bind-mount the app folder
       - ./backend:/app:ro
+      # Where to find the home of the users, for submission
+      - "user_homes:/userhomes"
     depends_on:
       # Wait for postgres to come up, otherwise the database is not ready
       - postgres
@@ -31,6 +35,9 @@ services:
     ports:
       # only exchange to the outside: the main hub port (API not exposed)
       - "8000:8000"
+    volumes:
+      # Where to store the homes of the users
+      - "user_homes:/home"
     restart: unless-stopped
   # The database server to store the nbgrader and content database
   postgres:
@@ -64,3 +71,4 @@ services:
 
 volumes:
   grader_content:
+  user_homes:

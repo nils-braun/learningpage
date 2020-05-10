@@ -2,8 +2,9 @@ import os
 import tempfile
 import logging
 import sys
-from shutil import rmtree
+from shutil import rmtree, copyfile
 from traitlets.config.loader import Config
+from glob import glob
 
 from nbgrader.exchange import ExchangeReleaseAssignment, ExchangeCollect, ExchangeSubmit
 from nbgrader.converters import Autograde, GenerateFeedback
@@ -76,6 +77,9 @@ def get_max_score_for(submission):
     max_score = float(submission["max_score"])
     score = float(submission["score"])
 
+    if not max_score:
+        return float("nan")
+
     return score / max_score
 
 
@@ -137,9 +141,17 @@ def submit(input_folder, assignment_slug, student_slug):
 
         # 2. Now store the incoming notebook in the exchange, as if the student would have submitted it
         # We need to cheat a bit to let nbgrader think, all notebooks are stored in "input"
+        temporary_input_dir = os.path.join(c.Exchange.root, "temporary_input")
+        os.makedirs(temporary_input_dir, exist_ok=True)
+        for input_file in glob(os.path.join(input_folder, "*.ipynb")):
+            if not os.path.isfile(input_file):
+                continue
+
+            copyfile(input_file, os.path.join(temporary_input_dir, os.path.basename(input_file)))
+
         class MyExchangeSubmit(ExchangeSubmit):
             def init_src(self):
-                self.src_path = os.path.abspath(input_folder)
+                self.src_path = temporary_input_dir
 
         app = MyExchangeSubmit(coursedir=coursedir, authenticator=authenticator, config=c)
         run(app)
@@ -171,3 +183,6 @@ def submit(input_folder, assignment_slug, student_slug):
 
     finally:
         rmtree(c.Exchange.root)
+
+if __name__ == "__main__":
+    submit("/userhomes/student/pandas-io/", "pandas-io", "student")

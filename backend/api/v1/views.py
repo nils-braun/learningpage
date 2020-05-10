@@ -71,7 +71,7 @@ def show_content(user, slug):
     return jsonify(return_dict)
 
 
-@blueprint.route("/content/<slug>/submissions")
+@blueprint.route("/content/<slug>/submissions", methods=["GET"])
 @authenticated
 def show_submissions(user, slug):
     content = Content.query.filter_by(slug=slug).first_or_404()
@@ -95,6 +95,23 @@ def show_submissions(user, slug):
     )
 
 
+@blueprint.route("/content/<slug>/submissions", methods=["POST"])
+@authenticated
+def add_submissions(user, slug):
+    content = Content.query.filter_by(slug=slug).first_or_404()
+    assignment_slug = content.assignment_slug
+
+    student_slug = user["name"]
+
+    base_folder = current_app.config.get("USER_BASE_FOLDER")
+
+    notebook_folder = os.path.join(base_folder, student_slug, assignment_slug)
+
+    grader_utils.submit(notebook_folder, assignment_slug, student_slug)
+
+    return jsonify({"status": "ok"})
+
+
 @blueprint.route("/content/<slug>/start")
 @authenticated
 def start_content(user, slug):
@@ -103,7 +120,7 @@ def start_content(user, slug):
 
     student_slug = user["name"]
 
-    base_folder = current_app.config.get("USER_BASE_FOLDER", ".")
+    base_folder = current_app.config.get("USER_BASE_FOLDER")
 
     notebook_folder = os.path.join(base_folder, student_slug, assignment_slug)
 
