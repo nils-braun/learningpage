@@ -1,8 +1,6 @@
 FROM python:3.8.2
 
-RUN mkdir -p /var/lib/exchange \
-    && mkdir -p /var/lib/content \
-    && chmod a+rw -R /var/lib/exchange \
+RUN mkdir -p /var/lib/content \
     && chmod a+rw -R /var/lib/content
 
 RUN useradd flask -d /home/flask -m -u 1000

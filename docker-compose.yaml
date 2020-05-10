@@ -18,8 +18,6 @@ services:
     volumes:
       # shared volume for the nbgrader content
       - grader_content:/var/lib/content
-      # shared volume for the nbgrader exchange
-      - grader_exchange:/var/lib/exchange
       # for local testing: bind-mount the app folder
       - ./backend:/app:ro
     depends_on:
@@ -50,9 +48,7 @@ services:
       GRADER_DATABASE_STRING: postgres://grader:grader@postgres/grader
     volumes:
       - grader_content:/home/jovyan/content
-      - grader_exchange:/home/jovyan/exchange
     depends_on:
       - backend
 volumes:
   grader_content:
-  grader_exchange:
