@@ -21,34 +21,46 @@ services:
       # for local testing: bind-mount the app folder
       - ./backend:/app:ro
     depends_on:
+      # Wait for postgres to come up, otherwise the database is not ready
       - postgres
+    restart: unless-stopped
+  # Jupyterhub to control it all
   jupyterhub:
     image: custom-jupyterhub:local-dev
     build: jupyterhub
     ports:
+      # only exchange to the outside: the main hub port (API not exposed)
       - "8000:8000"
-    volumes:
-      - "./jupyterhub/jupyterhub_config.py:/srv/jupyterhub/jupyterhub_config.py:ro"
     restart: unless-stopped
+  # The database server to store the nbgrader and content database
   postgres:
     image: postgres
     environment:
       POSTGRES_PASSWORD: postgres-password
     volumes:
+      # Init script to create the two databases
       - "./postgres/init_db.sh:/docker-entrypoint-initdb.d/init_db.sh:ro"
+  # A notebook server accessible by the graders only, to manage and grade assignments
   grader-notebook:
     image: grader-notebook:local-dev
     build: grader-notebook
-    command: ["jupyterhub-singleuser", "--group=graders"]
     environment:
+      # Prefix for the grader webservice. Has to be the same as the service name in the jupyterhub config.
       JUPYTERHUB_SERVICE_PREFIX: /services/grader-notebook/
+      # Token to access the jupyterhub API. Has to be the same as in the jupyterhub config.
       JUPYTERHUB_API_TOKEN: even-more-secret-key
+      # Where to find the jupyterhub API
       JUPYTERHUB_API_URL: http://jupyterhub:8081/hub/api
+      # OAuth client ID. Has to be the same as in the jupyterhub config.
       JUPYTERHUB_CLIENT_ID: grader-notebook
+      # sqlalchemy string for the nbgrader database
       GRADER_DATABASE_STRING: postgres://grader:grader@postgres/grader
     volumes:
+      # shared volume for the nbgrader content
       - grader_content:/home/jovyan/content
     depends_on:
-      - backend
+      # Wait for postgres to come up, otherwise the database is not ready
+      - postgres
+
 volumes:
   grader_content:

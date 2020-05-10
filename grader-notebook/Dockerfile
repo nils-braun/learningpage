@@ -15,3 +15,6 @@ RUN mkdir -p //home/$NB_USER/content \
     && chmod a+rw -R //home/$NB_USER/content
 
 ADD nbgrader_config.py .
+
+ENTRYPOINT [ "jupyterhub-singleuser" ]
+CMD [ "--group=graders" ]
