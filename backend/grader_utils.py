@@ -122,6 +122,8 @@ def _get_submission_from_disk(student_slug, assignment_slug):
 
 
 def get_submissions(student_slug, assignment_slug):
+    # TODO: the shown submissions are not correct in all cases:
+    # e.g. if grading is ongoing but the feedback is not created already, it shall not be shown
     db_submission = _get_submission_from_db(student_slug, assignment_slug)
     file_submission = _get_submission_from_disk(student_slug, assignment_slug)
 
@@ -204,7 +206,6 @@ def submit(input_folder, assignment_slug, student_slug):
 
         # Before that: assignment needs to be present in <course root>/release and in the database
         # e.g. by using generate_assignment
-        # TODO: test how we can do this temporary
 
         # 1. Release assignment. We need to have it in the outbound folder, otherwise nbgrader can not match the assignment properly
         # Takes it from <course root>/release. Needs no database.
@@ -288,10 +289,5 @@ def autograde(assignment_slug, student_slug):
 
 
 if __name__ == "__main__":
-    # api = _get_grader_api()
-    # print(api.generate_assignment(assignment_id="pandas-io"))
-    # submit("/userhomes/student/pandas-io/", "pandas-io", "grader")
-    autograde("pandas-io", "grader")
-    # gb = _get_gradebook()
-    # submission = gb.find_submission("pandas-io", "student")
-    # print(submission.to_dict())
+    # TODO: at some point we should have a script doing this for all submissions, which actually still need automated grading
+    autograde("pandas-io", "student")
