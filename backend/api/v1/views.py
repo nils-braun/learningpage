@@ -82,16 +82,22 @@ def show_submissions(user, slug):
     if not submissions:
         abort(404)
 
-    return jsonify(
+    def get_feedback_url(notebook_id):
+        if notebook_id:
+            return url_for(".get_feedback", slug=notebook_id)
+        else:
+            return None
+
+    return jsonify([
         {
-            "date": submissions["timestamp"],
-            "maxScore": grader_utils.get_max_score_for(submissions),
+            "date": submission["timestamp"],
+            "maxScore": grader_utils.get_max_score_for(submission),
             "notebooks": [{
                 "name": notebook["name"],
                 "maxScore": grader_utils.get_max_score_for(notebook),
-                "feedbackUrl": url_for(".get_feedback", slug=notebook["id"]),
-            } for notebook in submissions["notebooks"]]
-        }
+                "feedbackUrl": get_feedback_url(notebook["id"]),
+            } for notebook in submission["notebooks"]]
+        } for submission in submissions]
     )
 
 
