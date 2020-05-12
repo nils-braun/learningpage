@@ -81,9 +81,6 @@ are updated accordingly.
   based on the POST command the user calls.
   However if there was an update, the notebook could in principle still be related to another assignment.
   This needs to be handled.
-* write a script for doing the autograding, which only runs on the notebooks which actually need autograding
-* the submission endpoint does not return meaningful information in the moment!
-  At least not in all cases.
 
 ## Backend
 
