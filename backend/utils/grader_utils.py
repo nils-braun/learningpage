@@ -16,7 +16,7 @@ from nbgrader.api import Gradebook, MissingEntry
 from nbgrader.apps.api import NbGraderAPI
 
 
-def _get_config():
+def get_config():
     c = Config()
     c.CourseDirectory.course_id = "course"
     c.CourseDirectory.root = "/var/lib/content"
@@ -26,7 +26,7 @@ def _get_config():
 
 def _get_grader_app():
     # Create the nbgrader config "on the fly" out of the env variables
-    c = _get_config()
+    c = get_config()
 
     grader_app = NbGrader(config=c)
     grader_app.initialize()
@@ -44,7 +44,7 @@ def _get_grader_api():
 
 def _get_gradebook(c=None):
     if c is None:
-        c = _get_config()
+        c = get_config()
 
     coursedir = CourseDirectory(config=c)
     return Gradebook(coursedir.db_url, coursedir.course_id)
@@ -67,33 +67,60 @@ def get_assignment(assignment_slug):
 
 
 def _get_submission_from_db(student_slug, assignment_slug):
-    c = _get_config()
+    c = get_config()
     with _get_gradebook(c) as gb:
         try:
             submission = gb.find_submission(assignment_slug, student_slug)
 
+            if submission.needs_manual_grade:
+                return
+
             return_dict = {
                 "timestamp": submission.timestamp,
-                "needs_manual_grade": submission.needs_manual_grade,
-                "max_score": submission.max_score,
-                "score": submission.score,
+                "max_score": get_max_score_for(submission),
                 "graded": True,
                 "notebooks": [{
                     "id": notebook.id,
                     "name": notebook.name,
-                    "score": notebook.score,
-                    "graded": True,
-                    "needs_manual_grade": notebook.needs_manual_grade,
-                    "max_score": notebook.max_score,
-                } for notebook in submission.notebooks]
+                    "max_score": get_max_score_for(notebook),
+                } for notebook in submission.notebooks if not notebook.needs_manual_grade]
             }
 
             return return_dict
         except MissingEntry:
             return
 
-def _get_submission_from_disk(student_slug, assignment_slug):
-    c = _get_config()
+
+def _get_submission_from_autograded_files(student_slug, assignment_slug):
+    c = get_config()
+    coursedir = CourseDirectory(config=c)
+    api = _get_grader_api()
+    assignment_dir = os.path.abspath(coursedir.format_path(coursedir.autograded_directory, student_slug, assignment_slug))
+    notebooks = glob(os.path.join(assignment_dir, "*.ipynb"))
+
+    if not os.path.exists(assignment_dir) or not notebooks:
+        return
+
+    with _get_gradebook(c) as gb:
+        submission = gb.find_submission(assignment_slug, student_slug)
+        timestamp = submission.timestamp
+
+    return_dict = {
+        "timestamp": timestamp,
+        "max_score": None,
+        "graded": False,
+        "notebooks": [{
+            "id": None,
+            "name": notebook,
+            "max_score": None,
+        } for notebook in notebooks]
+    }
+
+    return return_dict
+
+
+def _get_submission_from_submitted_files(student_slug, assignment_slug):
+    c = get_config()
     coursedir = CourseDirectory(config=c)
     api = _get_grader_api()
     assignment_dir = os.path.abspath(coursedir.format_path(coursedir.submitted_directory, student_slug, assignment_slug))
@@ -102,18 +129,15 @@ def _get_submission_from_disk(student_slug, assignment_slug):
     if not os.path.exists(assignment_dir) or not notebooks:
         return
 
+    timestamp = api.get_submitted_timestamp(assignment_slug, student_slug)
+
     return_dict = {
-        "timestamp": api.get_submitted_timestamp(assignment_slug, student_slug),
-        "needs_manual_grade": None,
+        "timestamp": timestamp,
         "max_score": None,
-        "score": None,
         "graded": False,
         "notebooks": [{
             "id": None,
             "name": notebook,
-            "score": None,
-            "needs_manual_grade": None,
-            "graded": False,
             "max_score": None,
         } for notebook in notebooks]
     }
@@ -122,36 +146,34 @@ def _get_submission_from_disk(student_slug, assignment_slug):
 
 
 def get_submissions(student_slug, assignment_slug):
-    # TODO: the shown submissions are not correct in all cases:
-    # e.g. if grading is ongoing but the feedback is not created already, it shall not be shown
-    db_submission = _get_submission_from_db(student_slug, assignment_slug)
-    file_submission = _get_submission_from_disk(student_slug, assignment_slug)
+    file_submission = _get_submission_from_submitted_files(student_slug, assignment_slug)
 
-    submissions = sorted(filter(None, [db_submission, file_submission]), key=lambda x: x["timestamp"])
-    return list(submissions)
+    if file_submission:
+        return file_submission
+
+    file_submission = _get_submission_from_autograded_files(student_slug, assignment_slug)
+
+    if file_submission:
+        return file_submission
+
+    db_submission = _get_submission_from_db(student_slug, assignment_slug)
+    return db_submission
 
 
 def get_max_score(student_slug, assignment_slug):
-    submissions = get_submissions(student_slug, assignment_slug)
-    scores = [get_max_score_for(submission) for submission in submissions]
-    scores = list(filter(lambda x: x is not None, scores))
-    if not scores:
+    submission = get_submissions(student_slug, assignment_slug)
+    if not submission:
         return
-    return max(scores)
+
+    return submission["max_score"]
 
 
 def get_max_score_for(submission):
     if not submission:
         return
 
-    if not submission["graded"]:
-        return
-
-    if submission["needs_manual_grade"]:
-        return
-
-    max_score = float(submission["max_score"])
-    score = float(submission["score"])
+    max_score = float(submission.max_score)
+    score = float(submission.score)
 
     if not max_score:
         return float("nan")
@@ -186,13 +208,14 @@ def submit(input_folder, assignment_slug, student_slug):
         handler = logging.StreamHandler(sys.stdout)
         formatter = logging.Formatter("[%(levelname)s] %(message)s")
         handler.setFormatter(formatter)
+        handler.setLevel(logging.DEBUG)
         app.log.addHandler(handler)
 
         app.start()
 
         app.log.removeHandler(handler)
 
-    c = _get_config()
+    c = get_config()
     c.CourseDirectory.assignment_id = assignment_slug
     c.CourseDirectory.student_id = student_slug
     c.Exchange.root = tempfile.mkdtemp()
@@ -257,7 +280,7 @@ def submit(input_folder, assignment_slug, student_slug):
 
 
 def autograde(assignment_slug, student_slug):
-    c = _get_config()
+    c = get_config()
     c.CourseDirectory.assignment_id = assignment_slug
     c.CourseDirectory.student_id = student_slug
 
@@ -273,11 +296,19 @@ def autograde(assignment_slug, student_slug):
     _run_app(app)
     # Works! Does autograding, but feedback is not present so far
 
+
+def generate_feedback(assignment_slug, student_slug):
+    c = get_config()
+    c.CourseDirectory.assignment_id = assignment_slug
+    c.CourseDirectory.student_id = student_slug
+
+    coursedir = CourseDirectory(config=c)
+
     # If manual grading is needed, we can not export it already!
     with _get_gradebook(c) as gb:
         submission = gb.find_submission(assignment_slug, student_slug)
         if submission.needs_manual_grade:
-            return
+            return False
 
     # 5. Generate the feedback and make it visible to the student
     # Will use the grades stored in the database to create
@@ -287,7 +318,4 @@ def autograde(assignment_slug, student_slug):
     _run_app(app)
     # Works! Feedback present in content/feedback/..., (but not in exchange folder, where it is not needed)
 
-
-if __name__ == "__main__":
-    # TODO: at some point we should have a script doing this for all submissions, which actually still need automated grading
-    autograde("pandas-io", "student")
+    return True

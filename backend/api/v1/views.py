@@ -77,9 +77,9 @@ def show_submissions(user, slug):
     content = Content.query.filter_by(slug=slug).first_or_404()
     assignment_slug = content.assignment_slug
 
-    submissions = grader_utils.get_submissions(user["name"], assignment_slug)
+    submission = grader_utils.get_submissions(user["name"], assignment_slug)
 
-    if not submissions:
+    if not submission:
         abort(404)
 
     def get_feedback_url(notebook_id):
@@ -88,16 +88,16 @@ def show_submissions(user, slug):
         else:
             return None
 
-    return jsonify([
+    return jsonify(
         {
             "date": submission["timestamp"],
-            "maxScore": grader_utils.get_max_score_for(submission),
+            "maxScore": submission["max_score"],
             "notebooks": [{
                 "name": notebook["name"],
-                "maxScore": grader_utils.get_max_score_for(notebook),
+                "maxScore": notebook["max_score"],
                 "feedbackUrl": get_feedback_url(notebook["id"]),
             } for notebook in submission["notebooks"]]
-        } for submission in submissions]
+        }
     )
 
 
