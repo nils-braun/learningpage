@@ -308,6 +308,11 @@ def generate_feedback(assignment_slug, student_slug):
     with _get_gradebook(c) as gb:
         submission = gb.find_submission(assignment_slug, student_slug)
         if submission.needs_manual_grade:
+            for notebook in submission.notebooks:
+                if not notebook.needs_manual_grade:
+                    continue
+                print(notebook.id)
+
             return False
 
     # 5. Generate the feedback and make it visible to the student

@@ -41,9 +41,28 @@ Then call a POST on
 with the correct cookie.
 Now you will see submissions showing up, but without grade so far.
 
-Two possibilities for grading:
-* exec into the backend container and call the `grader_utils.py` script. That works only for automated grading.
-* log in with "grader:grader" and go to http://127.0.0.1:8000/services/grader-notebook/formgrader to do the manual grading step
+Do the batch autograding
+
+    docker-compose exec backend python3 autograde.py
+
+Then, call the feedback batch script:
+
+    docker-compose exec backend python3 feedback.py
+
+If you have manual grading in your assignments, it will output the ids you need to manually grade.
+Go to
+
+    http://127.0.0.1:8000/services/grader-notebook/formgrader/submissions/<id>
+
+for each of them and do the grading.
+
+After that, call the feedback script again.
+
+Now, the shown submissions on
+
+    http://127.0.0.1:8000/services/learningpage/api/v1/content/pandas-io/submissions
+
+are updated accordingly.
 
 ## Components
 
