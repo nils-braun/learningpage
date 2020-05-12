@@ -4,7 +4,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
-from utils import PrefixMiddleware
+from utils.api_utils import PrefixMiddleware
 
 
 prefix = os.environ.get('JUPYTERHUB_SERVICE_PREFIX')

@@ -5,8 +5,8 @@ from urllib.parse import urljoin
 from flask import Blueprint, jsonify, abort, send_file, url_for, current_app, redirect, request
 from werkzeug import exceptions
 
-from utils import authenticated
-import grader_utils
+from utils.api_utils import authenticated
+from utils import grader_utils
 from .models import Content
 
 
