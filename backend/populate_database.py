@@ -56,7 +56,7 @@ try:
 except:
     db.session.rollback()
 
-from grader_utils import _get_grader_api, _get_gradebook
+from utils.grader_utils import _get_grader_api, _get_gradebook
 
 # Init the gradebook
 _get_gradebook()
