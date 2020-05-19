@@ -86,6 +86,7 @@ are updated accordingly.
 
 GET /api/v1/content/<ID>
 {
+    slug: string
     title: string,        # max len 50
     description: string,  # markdown raw format
     subtitle: string,     # max len 255
@@ -106,7 +107,6 @@ GET /api/v1/content/<ID>
     contentGroupSlug: string,
     course: string,
     courseSlug: string,
-    maxScore: float,  # 0 <= max_score <= 1
     hasAssignment: bool, # “submittable” or not
     facts: [{
         key: string,
