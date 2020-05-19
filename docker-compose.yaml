@@ -34,8 +34,6 @@ services:
     command: nodemon --ext ts,tsx,css --ignore .next --exec "BASE_PATH=/services/learningpage-frontend next dev -H 0.0.0.0"
     depends_on:
       - backend
-    ports:
-      - 3000:3000
     volumes:
       # for local development mount frontend folder
       - ./frontend/src:/app/src
