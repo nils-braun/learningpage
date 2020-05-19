@@ -85,6 +85,7 @@ def show_submission(user, slug):
         {
             "date": submission["timestamp"],
             "maxScore": submission["max_score"],
+            "graded": submission["graded"],
             "notebooks": [{
                 "name": notebook["name"],
                 "maxScore": notebook["max_score"],
