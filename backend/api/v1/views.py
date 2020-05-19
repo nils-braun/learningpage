@@ -64,13 +64,13 @@ def show_content(slug):
     return jsonify(return_dict)
 
 
-@blueprint.route("/content/<slug>/submissions", methods=["GET"])
+@blueprint.route("/content/<slug>/submission", methods=["GET"])
 @authenticated
-def show_submissions(user, slug):
+def show_submission(user, slug):
     content = Content.query.filter_by(slug=slug).first_or_404()
     assignment_slug = content.assignment_slug
 
-    submission = grader_utils.get_submissions(user["name"], assignment_slug)
+    submission = grader_utils.get_submission(user["name"], assignment_slug)
 
     if not submission:
         abort(404)
@@ -94,9 +94,9 @@ def show_submissions(user, slug):
     )
 
 
-@blueprint.route("/content/<slug>/submissions", methods=["POST"])
+@blueprint.route("/content/<slug>/submission", methods=["POST"])
 @authenticated
-def add_submissions(user, slug):
+def add_submission(user, slug):
     content = Content.query.filter_by(slug=slug).first_or_404()
     assignment_slug = content.assignment_slug
 
