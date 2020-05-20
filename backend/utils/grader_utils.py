@@ -145,7 +145,7 @@ def _get_submission_from_submitted_files(student_slug, assignment_slug):
     return return_dict
 
 
-def get_submissions(student_slug, assignment_slug):
+def get_submission(student_slug, assignment_slug):
     file_submission = _get_submission_from_submitted_files(student_slug, assignment_slug)
 
     if file_submission:
@@ -161,7 +161,7 @@ def get_submissions(student_slug, assignment_slug):
 
 
 def get_max_score(student_slug, assignment_slug):
-    submission = get_submissions(student_slug, assignment_slug)
+    submission = get_submission(student_slug, assignment_slug)
     if not submission:
         return
 

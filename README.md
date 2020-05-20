@@ -84,8 +84,14 @@ are updated accordingly.
 
 ## Backend
 
-GET /api/v1/content/<ID>
+GET /api/v1/content/$ID
+
+Show information for a given content from the database.
+Can be accessed without authentication.
+
+```
 {
+    slug: string
     title: string,        # max len 50
     description: string,  # markdown raw format
     subtitle: string,     # max len 255
@@ -106,7 +112,6 @@ GET /api/v1/content/<ID>
     contentGroupSlug: string,
     course: string,
     courseSlug: string,
-    maxScore: float,  # 0 <= max_score <= 1
     hasAssignment: bool, # “submittable” or not
     facts: [{
         key: string,
@@ -114,33 +119,64 @@ GET /api/v1/content/<ID>
         extra: string,   # JSON string
     }]
 }
+```
 
 
-GET /api/v1/content/<ID>/submissions
+GET /api/v1/content/$ID/submission
+
+Show the last submission for an authenticated user for this
+specific content.
+A submission can consist of multiple notebooks, each of them can have a distinct score.
+If grading is still pending, the `graded` variable will be set to false.
+If no submission was done, a 404 is returned.
+
+In all cases, only the single latest submission is returned.
+If an old submission was already graded and a new submission was submitted, only the new ungraded submission will be returned.
+
+```
 {
     date: date,
     maxScore: float,
+    graded: boolean
     notebooks: [{
         feedbackUrl: string,
         name: string, # name of the notebook
         maxScore: float,
     }]
 }
+```
 
 
-POST /api/v1/content/<ID>/submissions
+POST /api/v1/content/$ID/submission
 
-GET /api/v1/content/<ID>/start
-	only forward, HTTP 302 (temporary redirect, der Client sollte sich das nicht merken!)
+Send a post to this endpoint to submit a new submission
+for the given content.
+The submission content is automatically fetched from `$USER_BASE_FOLDER/student_slug/assignment_slug`.
+
+No grading will happen on submission.
+See above on how to autograde and create feedback.
+
+
+GET /api/v1/content/$ID/start
+
+Redirect to the notebook (if already downloaded) or the specific git-link of this content.
+
 
 GET /api/v1/user
+
+Get information on an authenticated user.
+```
 {
     isAdmin: bool,
     created: date,
     lastActivity: date,
     name: string,
 }
+```
 
 
-GET /api/v1/feedback/<ID>
-	file download
+GET /api/v1/feedback/$ID
+
+Download the feedback of a given ID if present.
+Will return a pdf with the feedback.
+This endpoint is used in the `feedbackUrl` of the submissions.
