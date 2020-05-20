@@ -27,15 +27,9 @@ def show_user(user):
 
 
 @blueprint.route("/content/<slug>")
-@authenticated
-def show_content(user, slug):
+def show_content(slug):
     content = Content.query.filter_by(slug=slug).first_or_404()
     has_assignment = bool(content.assignment_slug)
-
-    if has_assignment:
-        max_score = grader_utils.get_max_score(user["name"], content.assignment_slug)
-    else:
-        max_score = None
 
     return_dict = {
         "slug": content.slug,
@@ -59,7 +53,6 @@ def show_content(user, slug):
         "contentGroupSlug": content.content_group_slug,
         "course": content.course.name,
         "courseSlug": content.course_slug,
-        "maxScore": max_score,
         "hasAssignment": has_assignment,
         "facts": [{
           "key": fact.key,
@@ -71,13 +64,13 @@ def show_content(user, slug):
     return jsonify(return_dict)
 
 
-@blueprint.route("/content/<slug>/submissions", methods=["GET"])
+@blueprint.route("/content/<slug>/submission", methods=["GET"])
 @authenticated
-def show_submissions(user, slug):
+def show_submission(user, slug):
     content = Content.query.filter_by(slug=slug).first_or_404()
     assignment_slug = content.assignment_slug
 
-    submission = grader_utils.get_submissions(user["name"], assignment_slug)
+    submission = grader_utils.get_submission(user["name"], assignment_slug)
 
     if not submission:
         abort(404)
@@ -92,6 +85,7 @@ def show_submissions(user, slug):
         {
             "date": submission["timestamp"],
             "maxScore": submission["max_score"],
+            "graded": submission["graded"],
             "notebooks": [{
                 "name": notebook["name"],
                 "maxScore": notebook["max_score"],
@@ -101,9 +95,9 @@ def show_submissions(user, slug):
     )
 
 
-@blueprint.route("/content/<slug>/submissions", methods=["POST"])
+@blueprint.route("/content/<slug>/submission", methods=["POST"])
 @authenticated
-def add_submissions(user, slug):
+def add_submission(user, slug):
     content = Content.query.filter_by(slug=slug).first_or_404()
     assignment_slug = content.assignment_slug
 
