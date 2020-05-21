@@ -31,12 +31,14 @@ services:
   frontend:
     image: learningpage-frontend:local-dev
     build: frontend
-    command: nodemon --ext ts,tsx,css --ignore .next --exec "BASE_PATH=/services/learningpage-frontend next dev -H 0.0.0.0"
+    command: npm run dev -- -H 0.0.0.0
     depends_on:
       - backend
     volumes:
       # for local development mount frontend folder
-      - ./frontend/src:/app/src
+      - ./frontend/src:/app/src:cached
+    environment:
+      BASE_PATH: /services/learningpage-frontend
     restart: unless-stopped
   # Jupyterhub to control it all
   jupyterhub:
