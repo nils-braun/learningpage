@@ -1,16 +1,14 @@
-import { dummyPageContent } from '../../dummy_data';
 import CoursePage from '../../components/CoursePage';
+import { apiBaseUrl } from '../../utils';
+import { ApiCoursePage } from '../../types';
 
 export async function getServerSideProps({ query }) {
   const { slug } = query;
-  // TODO: Does not work because credentials are only available in client.
-  //       We cannot use server-side rendering in this case.
-  // const url = `http://127.0.0.1:8000/services/learningpage/api/v1/content/${slug}`;
-  // await fetch(url, { method: 'GET', credentials: 'include' })
-  //   .then(res => res.json())
-  //   .then(content => console.log(content))
-  //   .catch(err => console.error(err));
-  return { props: { content: dummyPageContent } }
+  const url = [apiBaseUrl, 'content', slug].join('/');
+  const content: ApiCoursePage = await fetch(url, { method: 'GET' })
+    .then(res => res.json())
+    .catch(err => console.error(err));
+  return { props: { content } }
 }
 
 export default CoursePage;

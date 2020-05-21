@@ -1,7 +1,6 @@
 import { SFC } from 'react';
 
-import { CoursePageContent, CoursePageContentSection } from '../../types';
-import { dummyPageContent } from '../../dummy_data';
+import { CoursePageContentNew } from '../../types';
 
 import Header from './subcomponents/Header';
 import AboutSection from './subcomponents/AboutSection';
@@ -9,29 +8,28 @@ import InstructorsSection from './subcomponents/InstructorsSection';
 import AnchorRow from './subcomponents/AnchorRow';
 
 export interface CoursePageProps {
-    content: CoursePageContent;
-}
-
-export async function getServerSideProps() {
-  return { props: { content: dummyPageContent } }
-}
-
-function renderSection(section: CoursePageContentSection) {
-    switch(section.type) {
-        case 'about':
-            return <AboutSection key={section.type} {...section} />;
-        case 'instructors':
-            return <InstructorsSection key={section.type} {...section} />;
-    }
+    content: CoursePageContentNew;
 }
 
 const CoursePage: SFC<CoursePageProps> = (props) => {
     const { content } = props;
     return (
         <>
-            <Header title={content.title} subtitle={content.subtitle} />
-            <AnchorRow sections={content.sections} />
-            {content.sections.map(renderSection)}
+            <Header
+                title={content.title}
+                subtitle={content.subtitle}
+            />
+            <AnchorRow />
+            <AboutSection
+                description={content.description}
+                learnings={content.learnings}
+                skills={content.skills}
+                facts={content.facts.map(f => ({ type: f.key, value: f.value, extra: f.extra }))}
+                level={content.level}
+            />
+            <InstructorsSection
+                instructors={content.instructors}
+            />
         </>
     )
 }

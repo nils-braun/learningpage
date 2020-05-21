@@ -1,9 +1,9 @@
 import { SFC } from "react";
-import { CoursePageFact, LevelValue } from "../../../types";
+import { CourseLevelValue, CourseFact } from "../../../types";
 
-export type FactItemProps = CoursePageFact;
+export type FactItemProps = CourseFact;
 
-function getFactLevelTitle(level: LevelValue) {
+function getFactLevelTitle(level: CourseLevelValue) {
     switch (level) {
         case 'beginner':
             return 'Beginner Level';
@@ -16,34 +16,37 @@ function getFactLevelTitle(level: LevelValue) {
     }
 }
 
-function getFactLanguageTitle(key: string) {
-    switch (key) {
-        case 'english':
-            return 'English';
+function getIcon(type: string) {
+    switch (type) {
+        case 'level':
+            return 'las la-signal';
+        case 'language':
+            return 'las la-globe';
+        case 'prerequirements':
+            return 'las la-star-half-alt';
+        default:
+            return 'las la-question';
+    }
+}
+
+function getTitle(type: string, value: string) {
+    switch (type) {
+        case 'level':
+            return getFactLevelTitle(value as CourseLevelValue)
+        default:
+            return value;
     }
 }
 
 const FactItem: SFC<FactItemProps> = (props) => {
-    let iconClass = '';
-    let title = '';
-    let subtitle = '';
-
-    if (props.type == 'level') {
-        iconClass = "las la-signal";
-        title = getFactLevelTitle(props.value);
-        subtitle = props.prerequirements;
-    } else if (props.type == 'language') {
-        iconClass = "las la-globe";
-        title = getFactLanguageTitle(props.value);
-        subtitle = 'Subtitles: ' + props.subtitles.join(', ');
-    }
+    const subtitle = '';
     return (
         <div className="flex flex-row mb-8">
             <div className="mr-2">
-                <i className={`text-2xl px-2 py-2 border rounded-full text-blue-500 ` + iconClass} />
+                <i className={`text-2xl px-2 py-2 border rounded-full text-blue-500 ` + getIcon(props.type)} />
             </div>
             <div className="flex-grow">
-                <p className="text-xl">{title}</p>
+                <p className="text-xl">{getTitle(props.type, props.value)}</p>
                 <p className="text-gray-600">{subtitle}</p>
             </div>
         </div>
