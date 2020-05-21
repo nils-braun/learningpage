@@ -11,8 +11,7 @@ export interface CoursePageProps {
     page: CoursePageContent;
 }
 
-const CoursePage: SFC<CoursePageProps> = (props) => {
-    const { page } = props;
+const CoursePage: SFC<CoursePageProps> = ({ page }) => {
     return (
         <>
             <Header
@@ -32,6 +31,6 @@ const CoursePage: SFC<CoursePageProps> = (props) => {
             />
         </>
     )
-}
+};
 
 export default CoursePage;
