@@ -1,4 +1,3 @@
-require('isomorphic-fetch');
 import '../styles/index.css'
 
 import { Provider } from 'react-redux'

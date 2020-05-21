@@ -8,30 +8,29 @@ import InstructorsSection from './subcomponents/InstructorsSection';
 import AnchorRow from './subcomponents/AnchorRow';
 
 export interface CoursePageProps {
-    content: CoursePageContent;
+    page: CoursePageContent;
 }
 
-const CoursePage: SFC<CoursePageProps> = (props) => {
-    const { content } = props;
+const CoursePage: SFC<CoursePageProps> = ({ page }) => {
     return (
         <>
             <Header
-                title={content.title}
-                subtitle={content.subtitle}
+                title={page.title}
+                subtitle={page.subtitle}
             />
             <AnchorRow />
             <AboutSection
-                description={content.description}
-                learnings={content.learnings}
-                skills={content.skills}
-                facts={content.facts.map(f => ({ type: f.key, value: f.value, extra: f.extra }))}
-                level={content.level}
+                description={page.description}
+                learnings={page.learnings}
+                skills={page.skills}
+                facts={page.facts.map(f => ({ type: f.key, value: f.value, extra: f.extra }))}
+                level={page.level}
             />
             <InstructorsSection
-                instructors={content.instructors}
+                instructors={page.instructors}
             />
         </>
     )
-}
+};
 
 export default CoursePage;
