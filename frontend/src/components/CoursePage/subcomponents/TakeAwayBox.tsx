@@ -1,7 +1,10 @@
 import { SFC } from "react";
-import { CourseTakeAways } from "../../../types";
+import { Skill } from "../../../types";
 
-export interface TakeAwayBoxProps extends CourseTakeAways {}
+export interface TakeAwayBoxProps {
+    learnings: string[];
+    skills: Skill[];
+}
 
 const renderLearning = (learning: string) => {
     return (
@@ -32,7 +35,7 @@ const TakeAwayBox: SFC<TakeAwayBoxProps> = (props) => {
             <div>
                 <h3 className="text-gray-600 text-sm uppercase font-bold mb-4">Skills you will gain</h3>
                 <div className="mb-2">
-                    {props.skills.map(s => <span key={s} className="bg-gray-200 px-4 py-2 mr-2 rounded">{s}</span>)}
+                    {props.skills.map(s => <span key={s.slug} className="bg-gray-200 px-4 py-2 mr-2 rounded">{s.name}</span>)}
                 </div>
             </div>
         </div>

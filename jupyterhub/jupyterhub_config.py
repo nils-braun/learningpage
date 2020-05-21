@@ -23,6 +23,11 @@ c.JupyterHub.services = [
         "api_token": "very-secret-very-safe",
     },
     {
+        'name': 'learningpage-frontend',
+        'url': 'http://frontend:3000',
+        'api_token': 'super-duper-secure-key'
+    },
+    {
         'name': 'grader-notebook',
         'url': 'http://grader-notebook:8888',
         'api_token': 'even-more-secret-key',

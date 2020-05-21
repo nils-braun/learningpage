@@ -1,51 +1,51 @@
-export interface CoursePageContent {
-    title: string;
-    subtitle: string;
+export interface ApiCoursePage {
+    contentGroup: string;
+    contentGroupSlug: string;
+    course: string;
+    courseSlug: string;
     description: string;
-    sections: CoursePageContentSection[];
-}
-
-export type CoursePageContentSection = AboutSection | InstructorsSection;
-
-export interface CourseSection<T> {
-    type: T;
-    label: string;
-}
-
-export interface AboutSection extends CourseSection<'about'> {
-    description: string;
-    facts: CoursePageFact[];
-    takeAways: CourseTakeAways;
-}
-
-export interface CourseTakeAways {
+    facts: ApiCourseFact[];
+    hasAssignment: boolean;
+    instructors: ApiCourseInstructor[];
     learnings: string[];
-    skills: string[];
+    level: ApiCourseLevelValue;
+    logoUrl: string;
+    skills: ApiSkill[];
+    slug: string;
+    subtitle: string;
+    title: string;
 }
 
-export interface InstructorsSection extends CourseSection<'instructors'> {
-    instructors: CourseInstructor[];
+export interface ApiSkill {
+    name: string;
+    slug: string;
 }
 
-export type CoursePageFact = LevelFact | LanguageFact;
+export type Skill = ApiSkill;
 
-export type LevelValue = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type ApiCourseLevelValue = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type CourseLevelValue = ApiCourseLevelValue;
 
-export interface LevelFact {
-    type: 'level';
-    value: LevelValue;
-    prerequirements: string;
-}
 
-export interface LanguageFact {
-    type: 'language';
-    value: 'english' | 'german';
-    subtitles: string[];
-}
-
-export interface CourseInstructor {
-    imageUrl: string;
+export interface ApiCourseInstructor {
     firstName: string;
     lastName: string;
+    imageUrl: string;
     description: string;
 }
+
+export type CourseInstructor = ApiCourseInstructor;
+
+export interface ApiCourseFact {
+    key: string;
+    value: string;
+    extra: { [key: string]: any };
+}
+
+export type CourseFact = {
+    type: string;
+    value: string;
+    extra: { [key: string]: any };
+}
+
+export type CoursePageContent = ApiCoursePage;

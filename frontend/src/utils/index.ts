@@ -1,0 +1,1 @@
+export const apiBaseUrl = 'http://backend:5000/services/learningpage/api/v1';
