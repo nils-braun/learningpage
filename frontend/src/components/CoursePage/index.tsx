@@ -15,8 +15,10 @@ const CoursePage: SFC<CoursePageProps> = ({ page }) => {
     return (
         <>
             <Header
+                slug={page.slug}
                 title={page.title}
                 subtitle={page.subtitle}
+                hasAssignment={page.hasAssignment}
             />
             <AnchorRow />
             <AboutSection

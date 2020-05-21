@@ -1,9 +1,30 @@
-import { SFC } from "react";
+import { connect, ConnectedProps, MapStateToProps } from 'react-redux';
 
-export interface HeaderProps {
+import { SFC } from "react";
+import { thunkSubmitCourse } from '../../../actions/course';
+import { RootState } from '../../../types';
+
+const mapState = (state: RootState) => ({
+    submissionFetching: state.course.submissionFetching,
+    submissionsCount: state.course.submissionsCount
+});
+
+const mapDispatch = {
+    handleSubmit: thunkSubmitCourse
+};
+
+const connector = connect(mapState, mapDispatch);
+
+export interface HeaderOwnProps {
+    slug: string;
     title: string;
     subtitle: string;
+    hasAssignment: boolean;
 }
+
+type HeaderPropsFromRedux = ConnectedProps<typeof connector>;
+
+export type HeaderProps = HeaderPropsFromRedux & HeaderOwnProps;
 
 const Header: SFC<HeaderProps> = (props) => {
     return (
@@ -26,14 +47,19 @@ const Header: SFC<HeaderProps> = (props) => {
                         <button className="btn btn-white">Start</button>
                         <div>10.000 enrolled</div>
                     </div>
-                    <div className="inline-block">
-                        <button className="btn btn-white">Submit</button>
-                        <div>x submissions</div>
-                    </div>
+                    {props.hasAssignment && 
+                        <div className="inline-block">
+                            <button className="btn btn-white" 
+                                onClick={() => props.handleSubmit(props.slug)}
+                                disabled={props.submissionFetching}
+                            >Submit</button>
+                            <div>{props.submissionsCount} submissions</div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     );
 }
 
-export default Header;
+export default connector(Header);
