@@ -48,4 +48,4 @@ export type CourseFact = {
     extra: { [key: string]: any };
 }
 
-export type CoursePageContentNew = ApiCoursePage;
+export type CoursePageContent = ApiCoursePage;

@@ -1,6 +1,6 @@
 import { SFC } from 'react';
 
-import { CoursePageContentNew } from '../../types';
+import { CoursePageContent } from '../../types';
 
 import Header from './subcomponents/Header';
 import AboutSection from './subcomponents/AboutSection';
@@ -8,7 +8,7 @@ import InstructorsSection from './subcomponents/InstructorsSection';
 import AnchorRow from './subcomponents/AnchorRow';
 
 export interface CoursePageProps {
-    content: CoursePageContentNew;
+    content: CoursePageContent;
 }
 
 const CoursePage: SFC<CoursePageProps> = (props) => {
