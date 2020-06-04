@@ -7,7 +7,7 @@ from werkzeug import exceptions
 
 from utils.api_utils import authenticated
 from utils import grader_utils
-from .models import Content
+from .models import Content, Submission
 
 
 # Create a blueprint
@@ -64,16 +64,10 @@ def show_content(slug):
     return jsonify(return_dict)
 
 
-@blueprint.route("/content/<slug>/submission", methods=["GET"])
+@blueprint.route("/content/<slug>/submissions", methods=["GET"])
 @authenticated
-def show_submission(user, slug):
-    content = Content.query.filter_by(slug=slug).first_or_404()
-    assignment_slug = content.assignment_slug
-
-    submission = grader_utils.get_submission(user["name"], assignment_slug)
-
-    if not submission:
-        abort(404)
+def show_submissions(user, slug):
+    submissions = Submission.query.filter_by(content_slug=slug, user=user["name"]).all()
 
     def get_feedback_url(notebook_id):
         if notebook_id:
@@ -81,18 +75,18 @@ def show_submission(user, slug):
         else:
             return None
 
-    return jsonify(
-        {
-            "date": submission["timestamp"],
-            "maxScore": submission["max_score"],
-            "graded": submission["graded"],
-            "notebooks": [{
-                "name": notebook["name"],
-                "maxScore": notebook["max_score"],
-                "feedbackUrl": get_feedback_url(notebook["id"]),
-            } for notebook in submission["notebooks"]]
-        }
-    )
+    return_dict = [{
+        "date": submission.date,
+        "maxScore": submission.max_score,
+        "graded": submission.graded,
+        "notebooks": [{
+            "name": notebook.name,
+            "maxScore": notebook.max_score,
+            "feedbackUrl": get_feedback_url(notebook.slug),
+        } for notebook in submission.notebooks]
+    } for submission in submissions]
+
+    return jsonify(return_dict)
 
 
 @blueprint.route("/content/<slug>/submission", methods=["POST"])

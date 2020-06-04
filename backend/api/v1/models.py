@@ -129,3 +129,37 @@ class Skill(db.Model):
 
     def __repr__(self):
         return f"<Skill(name='{self.name}')>"
+
+
+class Submission(db.Model):
+    __tablename__ = "submissions"
+
+    slug = db.Column(IdentifierType, primary_key=True)
+    content_slug = db.Column(IdentifierType, db.ForeignKey('contents.slug'), nullable=False)
+    date = db.Column(db.DateTime, nullable=False)
+    user = db.Column(db.String, nullable=False)
+    graded = db.Column(db.Boolean, default=False, nullable=False)
+
+    notebooks = db.relationship("Notebook", back_populates="submission")
+    content = db.relationship("Content")
+
+    @property
+    def max_score(self):
+        return sum(n.max_score for n in self.notebooks)
+
+    def __repr__(self):
+        return f"<Submission(user='{self.user}', maxScore={self.max_score})>"
+
+
+class Notebook(db.Model):
+    __tablename__ = "notebooks"
+
+    slug = db.Column(IdentifierType, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    submission_slug = db.Column(IdentifierType, db.ForeignKey('submissions.slug'), nullable=False)
+    max_score = db.Column(db.Float, nullable=False, default=0)
+
+    submission = db.relationship("Submission", back_populates="notebooks")
+
+    def __repr__(self):
+        return f"<Notebook(maxScore={self.max_score})>"
