@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from flask import Blueprint, jsonify, abort, send_file, url_for, current_app, redirect, request
 from werkzeug import exceptions
 
-from utils.api_utils import authenticated, get_user_assignment_folder, get_submission_folder, get_feedback_file, slugify
+from utils.api_utils import authenticated, get_user_assignment_folder, get_storage_folder, slugify, is_grader
 from .models import Content, Submission, Notebook
 from app import db
 
@@ -17,7 +17,7 @@ from app import db
 blueprint = Blueprint('api_v1', __name__)
 
 # User route: show the user information
-@blueprint.route('/user')
+@blueprint.route('/user', methods=["GET"])
 @authenticated
 def show_user(user):
     """
@@ -32,7 +32,7 @@ def show_user(user):
     return jsonify(user)
 
 
-@blueprint.route("/content/<content_slug>")
+@blueprint.route("/content/<content_slug>", methods=["GET"])
 def show_content(content_slug):
     """
     Return non-user specific information on the content
@@ -74,7 +74,7 @@ def show_content(content_slug):
     return jsonify(return_dict)
 
 
-@blueprint.route("/content/<content_slug>/start")
+@blueprint.route("/content/<content_slug>/start", methods=["GET"])
 @authenticated
 def start_content(user, content_slug):
     """
@@ -164,7 +164,7 @@ def add_submission(user, content_slug):
     now = datetime.now().replace(tzinfo=timezone.utc)
     submission_slug = slugify(content_slug, now.timestamp())
 
-    target_folder = get_submission_folder(submission_slug, assignment_slug)
+    target_folder = get_storage_folder(submission_slug, assignment_slug)
     os.makedirs(target_folder)
 
     submission = Submission(slug=submission_slug, content_slug=content_slug, date=now, user=student_slug)
@@ -182,17 +182,71 @@ def add_submission(user, content_slug):
     return jsonify({"status": "ok"})
 
 
-@blueprint.route("/content/<content_slug>/submissions/<submission_slug>/feedback/<notebook_slug>")
+@blueprint.route("/feedback/<notebook_slug>", methods=["GET"])
 @authenticated
-def get_feedback(user, content_slug, submission_slug, notebook_slug):
+def get_feedback(user, notebook_slug):
     """
-    Return the feedback for the given content_slug and notebook_slug
-    if it is present.
+    Return the feedback for the given notebook_slug if it is present.
     """
-    feedback_file = get_feedback_file(content_slug, submission_slug, notebook_slug)
+    notebook = Notebook.query.filter_by(slug=notebook_slug).first_or_404()
+    submission_slug = notebook.submission_slug
+    assignment_slug = notebook.submission.content.assignment_slug
+
+    if not notebook.submission.user == user["name"]:
+        abort(403)
+
+    folder = get_storage_folder(submission_slug, assignment_slug)
+    feedback_file = os.path.join(folder, notebook.name + ".html")
 
     if not os.path.exists(feedback_file):
         abort(404)
 
     return send_file(feedback_file)
+
+
+@blueprint.route("/feedback/<notebook_slug>", methods=["POST"])
+@is_grader
+def add_feedback(notebook_slug):
+    """
+    Add feedback for a given notebook
+    """
+    notebook = Notebook.query.filter_by(slug=notebook_slug).first_or_404()
+    submission_slug = notebook.submission_slug
+    assignment_slug = notebook.submission.content.assignment_slug
+
+    folder = get_storage_folder(submission_slug, assignment_slug)
+    feedback_filename = os.path.join(folder, notebook.name + ".html")
+
+    feedback_file = request.files.get("feedback")
+
+    if not feedback_file:
+        abort(400)
+
+    score = request.data.get("score")
+
+    feedback_file.save(feedback_filename)
+
+    notebook.max_score = score
+    db.session.commit()
+
+    return jsonify({"status": "ok"})
+
+
+@blueprint.route("/notebook/<notebook_slug>")
+@is_grader
+def get_notebook(notebook_slug):
+    """
+    Return the notebook for the given notebook_slug if it is present.
+    """
+    notebook = Notebook.query.filter_by(slug=notebook_slug).first_or_404()
+    submission_slug = notebook.submission_slug
+    assignment_slug = notebook.submission.content.assignment_slug
+
+    folder = get_storage_folder(submission_slug, assignment_slug)
+    submission_file = os.path.join(folder, notebook.name)
+
+    if not os.path.exists(submission_file):
+        abort(404)
+
+    return send_file(submission_file)
 

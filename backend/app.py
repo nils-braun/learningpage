@@ -25,6 +25,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config["USER_BASE_FOLDER"] = os.environ.get('USER_BASE_FOLDER')
     app.config["STORAGE_BASE_FOLDER"] = os.environ.get('STORAGE_BASE_FOLDER')
+    app.config["GRADER_API_TOKEN"] = os.environ.get('GRADER_API_TOKEN')
 
     db.init_app(app)
 

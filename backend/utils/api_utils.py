@@ -33,6 +33,24 @@ def authenticated(f):
     return decorated
 
 
+def is_grader(f):
+    """Decorator to check if the grader API token is set"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header:
+            raise exceptions.Unauthorized(description="No token supplied.")
+
+        _, token = auth_header.split(" ")
+
+        if token != current_app.config.get("GRADER_API_TOKEN"):
+            raise exceptions.Unauthorized(description="Invalid token supplied.")
+
+        return f(*args, **kwargs)
+
+    return decorated
+
+
 class PrefixMiddleware(object):
     # from https://stackoverflow.com/questions/18967441/add-a-prefix-to-all-flask-routes
     def __init__(self, app, prefix=''):
@@ -56,26 +74,14 @@ def get_user_assignment_folder(student_slug, assignment_slug):
     return user_folder
 
 
-def get_storage_folder(student_slug):
+def get_storage_folder(submission_slug, assignment_slug):
     base_folder = current_app.config.get("STORAGE_BASE_FOLDER")
-    storage_folder = os.path.join(base_folder, student_slug)
+    storage_folder = os.path.join(base_folder, submission_slug, assignment_slug)
 
     return storage_folder
 
 
-def get_submission_folder(student_slug, submission_slug):
-    storage_folder = get_storage_folder(student_slug)
-    submission_folder = os.path.join(storage_folder, submission_slug, "submission")
-
-    return submission_folder
-
-
-def get_feedback_file(student_slug, submission_slug, notebook_slug):
-    storage_folder = get_storage_folder(student_slug)
-    feedback_file = os.path.join(storage_folder, submission_slug, "feedback", notebook_slug + ".html")
-
-    return feedback_file
-
-
 def slugify(*args):
     return hashlib.md5("_".join(map(str, args)).encode()).hexdigest()[:32]
+
+
