@@ -44,7 +44,7 @@ def show_user(user):
         "lastActivity": user["last_activity"],
         "name": user["name"],
     }
-    return jsonify(user)
+    return jsonify(return_dict)
 
 
 @blueprint.route("/content/<content_slug>", methods=["GET"])

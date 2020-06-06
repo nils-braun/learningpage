@@ -21,7 +21,12 @@ def authenticated(f):
         token = request.headers.get(auth.auth_header_name)
 
         if current_app.config.get("TESTING"):
-            user = {"name": "testing"}
+            user = {
+                "admin": False,
+                "created": "created",
+                "last_activity": "last_activity",
+                "name": "testing",
+            }
         elif cookie:
             user = auth.user_for_cookie(cookie)
         elif token:

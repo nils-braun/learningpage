@@ -1,6 +1,7 @@
 import os
 import shutil
 import io
+from unittest.mock import patch
 
 from flask import current_app
 
@@ -15,7 +16,7 @@ from api.v1.models import (
     Instructor,
     Notebook,
 )
-from utils.api_utils import get_user_assignment_folder, get_storage_folder
+from utils.api_utils import get_user_assignment_folder, get_storage_folder, auth
 
 
 class APITestCase(BaseTestCase):
@@ -59,6 +60,16 @@ class APITestCase(BaseTestCase):
     def test_empty_db(self):
         rv = self.client.get("/api/v1/content/my-content")
         self.assert404(rv)
+
+    def test_user(self):
+        rv = self.client.get("/api/v1/user")
+
+        self.assertEqual(rv.json, {
+            "isAdmin": False,
+            "created": "created",
+            "lastActivity": "last_activity",
+            "name": "testing",
+        })
 
     def test_content(self):
         self.add_content()
@@ -277,7 +288,26 @@ class AuthorizationTestCase(BaseTestCase):
         rv = cmd(url)
         self.assert401(rv)
 
-        # TODO: would be nice to mock the jupyterhub somehow
+        with patch('jupyterhub.services.auth.HubAuth._api_request') as mock_get:
+            # Make sure the jupyterhub returns nothing (= invalid token)
+            # and also does not cache the result
+            mock_get.return_value = None
+            auth.cache.clear()
+
+            rv = cmd(url, headers={auth.auth_header_name: "my-token"})
+            mock_get.assert_called_once_with('GET', 'http://127.0.0.1:8081/hub/api/authorizations/token/my-token', allow_404=True)
+            self.assert403(rv)
+
+        with patch('jupyterhub.services.auth.HubAuth._api_request') as mock_get:
+            # Make sure the jupyterhub returns nothing (= invalid token)
+            # and also does not cache the result
+            mock_get.return_value = None
+            auth.cache.clear()
+
+            self.client.set_cookie("", auth.cookie_name, "my-cookie")
+            rv = cmd(url)
+            mock_get.assert_called_once_with('GET', 'http://127.0.0.1:8081/hub/api/authorizations/cookie/jupyterhub-services/my-cookie', allow_404=True)
+            self.assert403(rv)
 
         # If everything is correct, it will not return an unauthenticated,
         # but any other status code (we do not really care which)
