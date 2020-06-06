@@ -1,5 +1,6 @@
 import os
 from functools import wraps
+import hashlib
 
 from flask import request, current_app
 from jupyterhub.services.auth import HubAuth

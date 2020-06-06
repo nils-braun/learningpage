@@ -4,7 +4,6 @@ import shutil
 from glob import glob
 from urllib.parse import urljoin
 from datetime import datetime, timezone
-import hashlib
 
 from flask import Blueprint, jsonify, abort, send_file, url_for, current_app, redirect, request
 from werkzeug import exceptions
@@ -165,6 +164,9 @@ def add_submission(user, content_slug):
     now = datetime.now().replace(tzinfo=timezone.utc)
     submission_slug = slugify(content_slug, now.timestamp())
 
+    target_folder = get_submission_folder(submission_slug, assignment_slug)
+    os.makedirs(target_folder)
+
     submission = Submission(slug=submission_slug, content_slug=content_slug, date=now, user=student_slug)
     db.session.add(submission)
 
@@ -173,13 +175,9 @@ def add_submission(user, content_slug):
         notebook_slug = slugify(submission_slug, notebook_name)
         db.session.add(Notebook(slug=notebook_slug, name=notebook_name, submission_slug=submission_slug))
 
+        shutil.copy(notebook, target_folder)
+
     db.session.commit()
-
-    target_folder = get_submission_folder(student_slug, submission_slug)
-    os.makedirs(target_folder)
-
-    for submission_file in submitted_notebooks:
-        shutil.copy(submission_file, target_folder)
 
     return jsonify({"status": "ok"})
 
