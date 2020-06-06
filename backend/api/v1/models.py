@@ -139,6 +139,7 @@ class Submission(db.Model):
     date = db.Column(db.DateTime, nullable=False)
     user = db.Column(db.String, nullable=False)
     graded = db.Column(db.Boolean, default=False, nullable=False)
+    external_identifier = db.Column(db.String, nullable=True)
 
     notebooks = db.relationship("Notebook", back_populates="submission")
     content = db.relationship("Content")

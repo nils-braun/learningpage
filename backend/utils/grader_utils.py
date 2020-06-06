@@ -61,11 +61,6 @@ def _run_app(app):
     app.log.removeHandler(handler)
 
 
-def get_assignment(assignment_slug):
-    api = _get_grader_api()
-    return api.get_assignment(assignment_slug)
-
-
 def _get_submission_from_db(student_slug, assignment_slug):
     c = get_config()
     with _get_gradebook(c) as gb:
@@ -77,12 +72,12 @@ def _get_submission_from_db(student_slug, assignment_slug):
 
             return_dict = {
                 "timestamp": submission.timestamp,
-                "max_score": get_max_score_for(submission),
+                "max_score": _get_max_score_for(submission),
                 "graded": True,
                 "notebooks": [{
                     "id": notebook.id,
                     "name": notebook.name,
-                    "max_score": get_max_score_for(notebook),
+                    "max_score": _get_max_score_for(notebook),
                 } for notebook in submission.notebooks if not notebook.needs_manual_grade]
             }
 
@@ -145,6 +140,19 @@ def _get_submission_from_submitted_files(student_slug, assignment_slug):
     return return_dict
 
 
+def _get_max_score_for(submission):
+    if not submission:
+        return
+
+    max_score = float(submission.max_score)
+    score = float(submission.score)
+
+    if not max_score:
+        return float("nan")
+
+    return score / max_score
+
+
 def get_submission(student_slug, assignment_slug):
     file_submission = _get_submission_from_submitted_files(student_slug, assignment_slug)
 
@@ -158,27 +166,6 @@ def get_submission(student_slug, assignment_slug):
 
     db_submission = _get_submission_from_db(student_slug, assignment_slug)
     return db_submission
-
-
-def get_max_score(student_slug, assignment_slug):
-    submission = get_submission(student_slug, assignment_slug)
-    if not submission:
-        return
-
-    return submission["max_score"]
-
-
-def get_max_score_for(submission):
-    if not submission:
-        return
-
-    max_score = float(submission.max_score)
-    score = float(submission.score)
-
-    if not max_score:
-        return float("nan")
-
-    return score / max_score
 
 
 def get_submitted_notebook(notebook_id):

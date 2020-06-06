@@ -17,13 +17,19 @@ services:
       GRADER_DATABASE_STRING: postgres://grader:grader@postgres/grader
       # Where to look for the userhome directories
       USER_BASE_FOLDER: /userhomes
+      # Where to store the submissions and feedbacks
+      STORAGE_BASE_FOLDER: /storage
+      # Where to share data with the nbgrader
+      GRADER_BASE_FOLDER: /grader
     volumes:
       # shared volume for the nbgrader content
-      - grader_content:/var/lib/content
+      - grader_content:/grader
       # for local testing: bind-mount the app folder
       - ./backend:/app:ro
       # Where to find the home of the users, for submission
-      - "user_homes:/userhomes"
+      - "user_homes:/userhomes:ro"
+      # Where to store all submissions
+      - "storage:/storage"
     depends_on:
       # Wait for postgres to come up, otherwise the database is not ready
       - postgres
@@ -84,3 +90,4 @@ services:
 volumes:
   grader_content:
   user_homes:
+  storage:

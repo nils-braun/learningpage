@@ -1,7 +1,7 @@
 import os
 from functools import wraps
 
-from flask import request
+from flask import request, current_app
 from jupyterhub.services.auth import HubAuth
 from werkzeug import exceptions
 
@@ -10,6 +10,7 @@ auth = HubAuth(
     api_token=os.environ['JUPYTERHUB_API_TOKEN'],
     cache_max_age=60,
 )
+
 
 def authenticated(f):
     """Decorator for authenticating with the Hub"""
@@ -31,7 +32,6 @@ def authenticated(f):
     return decorated
 
 
-
 class PrefixMiddleware(object):
     # from https://stackoverflow.com/questions/18967441/add-a-prefix-to-all-flask-routes
     def __init__(self, app, prefix=''):
@@ -46,3 +46,35 @@ class PrefixMiddleware(object):
         else:
             start_response('404', [('Content-Type', 'text/plain')])
             return ["This url does not belong to the app.".encode()]
+
+
+def get_user_assignment_folder(student_slug, assignment_slug):
+    base_folder = current_app.config.get("USER_BASE_FOLDER")
+    user_folder = os.path.join(base_folder, student_slug, assignment_slug)
+
+    return user_folder
+
+
+def get_storage_folder(student_slug):
+    base_folder = current_app.config.get("STORAGE_BASE_FOLDER")
+    storage_folder = os.path.join(base_folder, student_slug)
+
+    return storage_folder
+
+
+def get_submission_folder(student_slug, submission_slug):
+    storage_folder = get_storage_folder(student_slug)
+    submission_folder = os.path.join(storage_folder, submission_slug, "submission")
+
+    return submission_folder
+
+
+def get_feedback_file(student_slug, submission_slug, notebook_slug):
+    storage_folder = get_storage_folder(student_slug)
+    feedback_file = os.path.join(storage_folder, submission_slug, "feedback", notebook_slug + ".html")
+
+    return feedback_file
+
+
+def slugify(*args):
+    return hashlib.md5("_".join(map(str, args)).encode()).hexdigest()[:32]

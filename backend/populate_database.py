@@ -55,11 +55,3 @@ try:
     db.session.commit()
 except:
     db.session.rollback()
-
-from utils.grader_utils import _get_grader_api, _get_gradebook
-
-# Init the gradebook
-_get_gradebook()
-
-api = _get_grader_api()
-print(api.generate_assignment(assignment_id="pandas-io"))
