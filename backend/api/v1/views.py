@@ -5,19 +5,34 @@ from glob import glob
 from urllib.parse import urljoin
 from datetime import datetime, timezone
 
-from flask import Blueprint, jsonify, abort, send_file, url_for, current_app, redirect, request
+from flask import (
+    Blueprint,
+    jsonify,
+    abort,
+    send_file,
+    url_for,
+    current_app,
+    redirect,
+    request,
+)
 from werkzeug import exceptions
 
-from utils.api_utils import authenticated, get_user_assignment_folder, get_storage_folder, slugify, is_grader
+from utils.api_utils import (
+    authenticated,
+    get_user_assignment_folder,
+    get_storage_folder,
+    slugify,
+    is_grader,
+)
 from .models import Content, Submission, Notebook
 from app import db
 
 
 # Create a blueprint
-blueprint = Blueprint('api_v1', __name__)
+blueprint = Blueprint("api_v1", __name__)
 
 # User route: show the user information
-@blueprint.route('/user', methods=["GET"])
+@blueprint.route("/user", methods=["GET"])
 @authenticated
 def show_user(user):
     """
@@ -47,28 +62,29 @@ def show_content(content_slug):
         "description": content.description,
         "subtitle": content.subtitle,
         "learnings": list(filter(None, content.learnings.split("\n"))),
-        "skills": [{
-            "slug": skill.slug,
-            "name": skill.name,
-        } for skill in content.skills],
+        "skills": [
+            {"slug": skill.slug, "name": skill.name,} for skill in content.skills
+        ],
         "logoUrl": content.logo_url,
-        "instructors": [{
-            "imageUrl": instructor.image_url,
-            "firstName": instructor.first_name,
-            "lastName": instructor.last_name,
-            "description": instructor.description,
-        } for instructor in content.instructors],
+        "instructors": [
+            {
+                "imageUrl": instructor.image_url,
+                "firstName": instructor.first_name,
+                "lastName": instructor.last_name,
+                "description": instructor.description,
+            }
+            for instructor in content.instructors
+        ],
         "level": content.level,
         "contentGroup": content.content_group.name,
         "contentGroupSlug": content.content_group_slug,
         "course": content.course.name,
         "courseSlug": content.course_slug,
         "hasAssignment": has_assignment,
-        "facts": [{
-          "key": fact.key,
-          "value": fact.value,
-          "extra": fact.extra,
-        } for fact in content.facts]
+        "facts": [
+            {"key": fact.key, "value": fact.value, "extra": fact.extra,}
+            for fact in content.facts
+        ],
     }
 
     return jsonify(return_dict)
@@ -101,7 +117,9 @@ def start_content(user, content_slug):
     notebook_folder = get_user_assignment_folder(student_slug, assignment_slug)
 
     if os.path.exists(notebook_folder):
-        return redirect(os.path.join(request.host_url, "user-redirect/tree", assignment_slug))
+        return redirect(
+            os.path.join(request.host_url, "user-redirect/tree", assignment_slug)
+        )
     elif content.git_url:
         return redirect(content.git_url)
     else:
@@ -114,23 +132,38 @@ def show_submissions(user, content_slug):
     """
     Show all submissions for the given content_slug and user
     """
-    submissions = Submission.query.filter_by(content_slug=content_slug, user=user["name"]).all()
+    submissions = Submission.query.filter_by(
+        content_slug=content_slug, user=user["name"]
+    ).all()
 
     def get_feedback_url(notebook_slug, submission_slug):
-        return url_for(".get_feedback", content_slug=content_slug, submission_slug=submission_slug, notebook_slug=notebook_slug)
+        return url_for(
+            ".get_feedback",
+            content_slug=content_slug,
+            submission_slug=submission_slug,
+            notebook_slug=notebook_slug,
+        )
 
-    return_dict = [{
-        "slug": submission.slug,
-        "date": submission.date,
-        "maxScore": submission.max_score,
-        "graded": submission.graded,
-        "notebooks": [{
-            "slug": notebook.slug,
-            "name": notebook.name,
-            "maxScore": notebook.max_score,
-            "feedbackUrl": get_feedback_url(notebook_slug=notebook.slug, submission_slug=submission.slug),
-        } for notebook in submission.notebooks]
-    } for submission in submissions]
+    return_dict = [
+        {
+            "slug": submission.slug,
+            "date": submission.date,
+            "maxScore": submission.max_score,
+            "graded": submission.graded,
+            "notebooks": [
+                {
+                    "slug": notebook.slug,
+                    "name": notebook.name,
+                    "maxScore": notebook.max_score,
+                    "feedbackUrl": get_feedback_url(
+                        notebook_slug=notebook.slug, submission_slug=submission.slug
+                    ),
+                }
+                for notebook in submission.notebooks
+            ],
+        }
+        for submission in submissions
+    ]
 
     return jsonify(return_dict)
 
@@ -162,13 +195,19 @@ def add_submission(user, content_slug):
     target_folder = get_storage_folder(submission_slug, assignment_slug)
     os.makedirs(target_folder)
 
-    submission = Submission(slug=submission_slug, content_slug=content_slug, date=now, user=student_slug)
+    submission = Submission(
+        slug=submission_slug, content_slug=content_slug, date=now, user=student_slug
+    )
     db.session.add(submission)
 
     for notebook in submitted_notebooks:
         notebook_name = os.path.basename(notebook)
         notebook_slug = slugify(submission_slug, notebook_name)
-        db.session.add(Notebook(slug=notebook_slug, name=notebook_name, submission_slug=submission_slug))
+        db.session.add(
+            Notebook(
+                slug=notebook_slug, name=notebook_name, submission_slug=submission_slug
+            )
+        )
 
         shutil.copy(notebook, target_folder)
 
@@ -247,4 +286,3 @@ def get_notebook(notebook_slug):
         abort(404)
 
     return send_file(submission_file)
-

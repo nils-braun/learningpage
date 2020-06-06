@@ -23,7 +23,7 @@ class BaseTestCase(TestCase):
 
         app = create_app()
 
-        app.config['TESTING'] = True
+        app.config["TESTING"] = True
 
         return app
 

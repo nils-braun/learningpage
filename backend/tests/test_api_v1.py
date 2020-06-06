@@ -6,7 +6,15 @@ from flask import current_app
 
 from tests.fixtures import BaseTestCase
 from app import create_app, db
-from api.v1.models import Content, Skill, ContentGroup, Course, Fact, Instructor, Notebook
+from api.v1.models import (
+    Content,
+    Skill,
+    ContentGroup,
+    Course,
+    Fact,
+    Instructor,
+    Notebook,
+)
 from utils.api_utils import get_user_assignment_folder, get_storage_folder
 
 
@@ -16,19 +24,24 @@ class APITestCase(BaseTestCase):
 
         instructors = [
             Instructor(
-                slug="instructor",
-                first_name="First",
-                last_name="Last",
-                description="",
+                slug="instructor", first_name="First", last_name="Last", description="",
             )
         ]
 
         course = Course(slug="course", name="Course")
         content_group = ContentGroup(slug="group", name="Group", course=course)
-        content = Content(slug="content", title="Content", subtitle="subtitle",
-                        description="description", learnings="learnings",
-                        level="level", skills=skills, content_group=content_group,
-                        instructors=instructors, assignment_slug="assignment")
+        content = Content(
+            slug="content",
+            title="Content",
+            subtitle="subtitle",
+            description="description",
+            learnings="learnings",
+            level="level",
+            skills=skills,
+            content_group=content_group,
+            instructors=instructors,
+            assignment_slug="assignment",
+        )
 
         facts = [
             Fact(slug="fact", content=content, key="Fact", value="value"),
@@ -51,23 +64,33 @@ class APITestCase(BaseTestCase):
         self.add_content()
 
         rv = self.client.get("/api/v1/content/content")
-        self.assertEqual(rv.json, {
-            "contentGroup": "Group",
-            "contentGroupSlug": "group",
-            "course": "Course",
-            "courseSlug": "course",
-            "description": "description",
-            "facts": [{"extra": {}, "key": "Fact", "value": "value"}],
-            "hasAssignment": True,
-            "instructors": [{"description": "", "firstName": "First", "imageUrl": None, "lastName": "Last"}],
-            "learnings": ["learnings"],
-            "level": "level",
-            "logoUrl": None,
-            "skills": [{"name": "Skill", "slug": "skill"}],
-            "slug": "content",
-            "subtitle": "subtitle",
-            "title": "Content",
-        })
+        self.assertEqual(
+            rv.json,
+            {
+                "contentGroup": "Group",
+                "contentGroupSlug": "group",
+                "course": "Course",
+                "courseSlug": "course",
+                "description": "description",
+                "facts": [{"extra": {}, "key": "Fact", "value": "value"}],
+                "hasAssignment": True,
+                "instructors": [
+                    {
+                        "description": "",
+                        "firstName": "First",
+                        "imageUrl": None,
+                        "lastName": "Last",
+                    }
+                ],
+                "learnings": ["learnings"],
+                "level": "level",
+                "logoUrl": None,
+                "skills": [{"name": "Skill", "slug": "skill"}],
+                "slug": "content",
+                "subtitle": "subtitle",
+                "title": "Content",
+            },
+        )
 
     def test_empty_submissions(self):
         self.add_content()
@@ -102,35 +125,50 @@ class APITestCase(BaseTestCase):
         self.assertEqual(len(submissions), 1)
 
         submission = submissions[0]
-        self.assertEqual(submission, {
-            "slug": submission["slug"], # not tested on purpose
-            "date": submission["date"], # not tested on purpose
-            "maxScore": 0.0,
-            "graded": False,
-            "notebooks": [{
-                "slug":  submission["notebooks"][0]["slug"], # not tested on purpose
-                "name": "notebook.ipynb",
-                "maxScore": 0,
-                "feedbackUrl": submission["notebooks"][0]["feedbackUrl"], # not tested on purpose
-            }]
-        })
+        self.assertEqual(
+            submission,
+            {
+                "slug": submission["slug"],  # not tested on purpose
+                "date": submission["date"],  # not tested on purpose
+                "maxScore": 0.0,
+                "graded": False,
+                "notebooks": [
+                    {
+                        "slug": submission["notebooks"][0][
+                            "slug"
+                        ],  # not tested on purpose
+                        "name": "notebook.ipynb",
+                        "maxScore": 0,
+                        "feedbackUrl": submission["notebooks"][0][
+                            "feedbackUrl"
+                        ],  # not tested on purpose
+                    }
+                ],
+            },
+        )
 
         # Notebook should be copied and ready for external grading
         target_folder = get_storage_folder(submission["slug"], "assignment")
         assert os.path.exists(os.path.join(target_folder, "notebook.ipynb"))
-        self.assertEqual(open(os.path.join(target_folder, "notebook.ipynb")).read(), "test")
+        self.assertEqual(
+            open(os.path.join(target_folder, "notebook.ipynb")).read(), "test"
+        )
 
         # Notebook should be downloadable
         notebook_slug = submission["notebooks"][0]["slug"]
-        rv = self.client.get(f"/api/v1/notebook/{notebook_slug}",
-                             headers={"Authorization": "token grader"})
+        rv = self.client.get(
+            f"/api/v1/notebook/{notebook_slug}",
+            headers={"Authorization": "token grader"},
+        )
         self.assert200(rv)
         self.assertEqual(rv.data, b"test")
 
         # Notebook is intentionally deleted
         shutil.rmtree(target_folder)
-        rv = self.client.get(f"/api/v1/notebook/{notebook_slug}",
-                             headers={"Authorization": "token grader"})
+        rv = self.client.get(
+            f"/api/v1/notebook/{notebook_slug}",
+            headers={"Authorization": "token grader"},
+        )
         self.assert404(rv)
 
     def test_start_content(self):
@@ -177,31 +215,32 @@ class APITestCase(BaseTestCase):
         self.assert404(rv)
 
         # Add feedback = grade; wrong request
-        rv = self.client.post(f"/api/v1/feedback/{notebook_slug}",
-                              headers={"Authorization": "token grader"})
+        rv = self.client.post(
+            f"/api/v1/feedback/{notebook_slug}",
+            headers={"Authorization": "token grader"},
+        )
         self.assert400(rv)
 
         # Add feedback = grade; wrong reqest
-        data = {
-            "feedback": (io.BytesIO(b"feedback"), 'feedback.html')
-        }
+        data = {"feedback": (io.BytesIO(b"feedback"), "feedback.html")}
 
-        rv = self.client.post(f"/api/v1/feedback/{notebook_slug}",
-                              data=data,
-                              content_type='multipart/form-data',
-                              headers={"Authorization": "token grader"})
+        rv = self.client.post(
+            f"/api/v1/feedback/{notebook_slug}",
+            data=data,
+            content_type="multipart/form-data",
+            headers={"Authorization": "token grader"},
+        )
         self.assert400(rv)
 
         # Add feedback = grade; correct reqest
-        data = {
-            "score": 0.5,
-            "feedback": (io.BytesIO(b"feedback"), 'feedback.html')
-        }
+        data = {"score": 0.5, "feedback": (io.BytesIO(b"feedback"), "feedback.html")}
 
-        rv = self.client.post(f"/api/v1/feedback/{notebook_slug}",
-                              data=data,
-                              content_type='multipart/form-data',
-                              headers={"Authorization": "token grader"})
+        rv = self.client.post(
+            f"/api/v1/feedback/{notebook_slug}",
+            data=data,
+            content_type="multipart/form-data",
+            headers={"Authorization": "token grader"},
+        )
         self.assert200(rv)
         self.assertEqual(rv.json, {"status": "ok"})
 
