@@ -19,14 +19,17 @@ def authenticated(f):
     def decorated(*args, **kwargs):
         cookie = request.cookies.get(auth.cookie_name)
         token = request.headers.get(auth.auth_header_name)
-        if cookie:
+
+        if current_app.config.get("TESTING"):
+            user = {"name": "testing"}
+        elif cookie:
             user = auth.user_for_cookie(cookie)
         elif token:
             user = auth.user_for_token(token)
         else:
             raise exceptions.Unauthorized(description="No cookie or token supplied.")
         if not user:
-            raise exceptions.Unauthorized(description="Invalid cookie or token supplied.")
+            raise exceptions.Forbidden(description="Invalid cookie or token supplied.")
 
         return f(user, *args, **kwargs)
 
@@ -41,10 +44,13 @@ def is_grader(f):
         if not auth_header:
             raise exceptions.Unauthorized(description="No token supplied.")
 
-        _, token = auth_header.split(" ")
+        try:
+            _, token = auth_header.split(" ")
+        except ValueError:
+            raise exceptions.Unauthorized(description="Invalid token supplied.")
 
         if token != current_app.config.get("GRADER_API_TOKEN"):
-            raise exceptions.Unauthorized(description="Invalid token supplied.")
+            raise exceptions.Forbidden(description="Invalid token supplied.")
 
         return f(*args, **kwargs)
 
@@ -71,14 +77,14 @@ def get_user_assignment_folder(student_slug, assignment_slug):
     base_folder = current_app.config.get("USER_BASE_FOLDER")
     user_folder = os.path.join(base_folder, student_slug, assignment_slug)
 
-    return user_folder
+    return os.path.abspath(user_folder)
 
 
 def get_storage_folder(submission_slug, assignment_slug):
     base_folder = current_app.config.get("STORAGE_BASE_FOLDER")
     storage_folder = os.path.join(base_folder, submission_slug, assignment_slug)
 
-    return storage_folder
+    return os.path.abspath(storage_folder)
 
 
 def slugify(*args):

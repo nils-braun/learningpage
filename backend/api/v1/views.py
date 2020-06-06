@@ -117,16 +117,15 @@ def show_submissions(user, content_slug):
     submissions = Submission.query.filter_by(content_slug=content_slug, user=user["name"]).all()
 
     def get_feedback_url(notebook_slug, submission_slug):
-        if notebook_slug:
-            return url_for(".get_feedback", content_slug=content_slug, submission_slug=submission_slug, notebook_slug=notebook_slug)
-        else:
-            return None
+        return url_for(".get_feedback", content_slug=content_slug, submission_slug=submission_slug, notebook_slug=notebook_slug)
 
     return_dict = [{
+        "slug": submission.slug,
         "date": submission.date,
         "maxScore": submission.max_score,
         "graded": submission.graded,
         "notebooks": [{
+            "slug": notebook.slug,
             "name": notebook.name,
             "maxScore": notebook.max_score,
             "feedbackUrl": get_feedback_url(notebook_slug=notebook.slug, submission_slug=submission.slug),
@@ -152,10 +151,6 @@ def add_submission(user, content_slug):
     student_slug = user["name"]
 
     source_folder = get_user_assignment_folder(student_slug, assignment_slug)
-
-    if not os.path.exists(source_folder):
-        abort(404)
-
     submitted_notebooks = glob(os.path.join(source_folder, "*.ipynb"))
 
     if not submitted_notebooks:
@@ -222,7 +217,10 @@ def add_feedback(notebook_slug):
     if not feedback_file:
         abort(400)
 
-    score = request.data.get("score")
+    score = request.form.get("score")
+
+    if score is None:
+        abort(400)
 
     feedback_file.save(feedback_filename)
 

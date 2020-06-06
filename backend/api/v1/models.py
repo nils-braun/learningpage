@@ -45,7 +45,7 @@ class Content(db.Model):
     def course(self):
         return self.content_group.course
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return f"<Content(title='{self.title}', content_group='{self.content_group.name}', course='{self.course.name}')>"
 
 
@@ -61,7 +61,7 @@ class ContentGroup(db.Model):
     contents = db.relationship(
         "Content", back_populates="content_group", order_by=Content.sort_number)
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return f"<ContentGroup(name='{self.name}', course='{self.course.name}')>"
 
 
@@ -85,7 +85,7 @@ class Course(db.Model):
 
         return contents
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return f"<Course(name='{self.name}')>"
 
 
@@ -100,7 +100,7 @@ class Instructor(db.Model):
 
     content = db.relationship("Content", back_populates="instructors", secondary="content_instructor_association")
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return f"<Instructor(name='{self.name}')>"
 
 
@@ -115,7 +115,7 @@ class Fact(db.Model):
 
     content = db.relationship("Content", back_populates="facts")
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return f"<Fact(key='{self.key}', value='{self.value}')>"
 
 
@@ -127,7 +127,7 @@ class Skill(db.Model):
 
     content = db.relationship("Content", back_populates="skills", secondary="content_skill_association")
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return f"<Skill(name='{self.name}')>"
 
 
@@ -148,7 +148,7 @@ class Submission(db.Model):
     def max_score(self):
         return sum(n.max_score for n in self.notebooks)
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return f"<Submission(user='{self.user}', maxScore={self.max_score})>"
 
 
@@ -162,5 +162,5 @@ class Notebook(db.Model):
 
     submission = db.relationship("Submission", back_populates="notebooks")
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return f"<Notebook(maxScore={self.max_score})>"
