@@ -8,7 +8,7 @@ from werkzeug import exceptions
 
 
 auth = HubAuth(
-    api_token=os.environ['JUPYTERHUB_API_TOKEN'],
+    api_token=os.environ.get('JUPYTERHUB_API_TOKEN', ""),
     cache_max_age=60,
 )
 
