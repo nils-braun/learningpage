@@ -264,6 +264,7 @@ def add_feedback(notebook_slug):
     feedback_file.save(feedback_filename)
 
     notebook.max_score = score
+    notebook.graded = True
     db.session.commit()
 
     return jsonify({"status": "ok"})
@@ -286,3 +287,31 @@ def get_notebook(notebook_slug):
         abort(404)
 
     return send_file(submission_file)
+
+
+@blueprint.route("/ungraded")
+@is_grader
+def get_ungraded_submissions():
+    """
+    Return information on the ungraded submissions.
+    """
+    # We need to do a python-side-filtering, as the property
+    # can not be calculated in SQL
+    submissions = Submission.query.all()
+    submissions = filter(lambda s: not s.graded, submissions)
+
+    return_dict = [
+        {
+            "slug": submission.slug,
+            "notebooks": [
+                {
+                    "slug": notebook.slug,
+                    "name": notebook.name,
+                }
+                for notebook in submission.notebooks
+            ],
+        }
+        for submission in submissions
+    ]
+
+    return jsonify(return_dict)

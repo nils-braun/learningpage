@@ -260,6 +260,7 @@ class APITestCase(BaseTestCase):
 
         self.assertEqual(rv.json[0]["notebooks"][0]["maxScore"], 0.5)
         self.assertEqual(rv.json[0]["maxScore"], 0.5)
+        self.assertEqual(rv.json[0]["graded"], True)
 
         # Feedback should be fetchable
         rv = self.client.get(f"/api/v1/feedback/{notebook_slug}")
@@ -273,6 +274,54 @@ class APITestCase(BaseTestCase):
 
         rv = self.client.get(f"/api/v1/feedback/{notebook_slug}")
         self.assert403(rv)
+
+    def test_ungraded_submission(self):
+        self.add_content()
+        self.add_notebook()
+
+        # Submission should be successful
+        rv = self.client.post("/api/v1/content/content/submissions")
+        self.assert200(rv)
+
+        # Submission should be ungraded so far
+        rv = self.client.get("/api/v1/ungraded",
+            headers={"Authorization": "token grader"})
+        self.assert200(rv)
+
+        submissions = rv.json
+        self.assertEqual(len(submissions), 1)
+
+        submission = submissions[0]
+        notebook_slug = submission["notebooks"][0]["slug"]
+        self.assertEqual(
+            submission,
+            {
+                "slug": submission["slug"],  # not tested on purpose
+                "notebooks": [
+                    {
+                        "slug": notebook_slug,  # not tested on purpose
+                        "name": "notebook.ipynb",
+                    }
+                ],
+            },
+        )
+
+        # now do the grading
+        data = {"score": 0.5, "feedback": (io.BytesIO(b"feedback"), "feedback.html")}
+        rv = self.client.post(
+            f"/api/v1/feedback/{notebook_slug}",
+            data=data,
+            content_type="multipart/form-data",
+            headers={"Authorization": "token grader"},
+        )
+        self.assert200(rv)
+
+        # Submission should not show up
+        rv = self.client.get("/api/v1/ungraded",
+            headers={"Authorization": "token grader"})
+        self.assert200(rv)
+
+        self.assertEqual(rv.json, [])
 
 
 class AuthorizationTestCase(BaseTestCase):

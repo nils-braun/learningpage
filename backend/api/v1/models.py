@@ -157,7 +157,6 @@ class Submission(db.Model):
     )
     date = db.Column(db.DateTime, nullable=False)
     user = db.Column(db.String, nullable=False)
-    graded = db.Column(db.Boolean, default=False, nullable=False)
     external_identifier = db.Column(db.String, nullable=True)
 
     notebooks = db.relationship("Notebook", back_populates="submission")
@@ -166,6 +165,10 @@ class Submission(db.Model):
     @property
     def max_score(self):
         return sum(n.max_score for n in self.notebooks)
+
+    @property
+    def graded(self):
+        return all(notebook.graded for notebook in self.notebooks) if self.notebooks else False
 
     def __repr__(self):  # pragma: no cover
         return f"<Submission(user='{self.user}', maxScore={self.max_score})>"
@@ -180,6 +183,7 @@ class Notebook(db.Model):
         IdentifierType, db.ForeignKey("submissions.slug"), nullable=False
     )
     max_score = db.Column(db.Float, nullable=False, default=0)
+    graded = db.Column(db.Boolean, nullable=False, default=False)
 
     submission = db.relationship("Submission", back_populates="notebooks")
 
