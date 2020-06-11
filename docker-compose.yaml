@@ -20,8 +20,6 @@ services:
       # API token for the grader
       GRADER_API_TOKEN: just-another-secret-string
     volumes:
-      # for local testing: bind-mount the app folder
-      - ./backend:/app:ro
       # Where to find the home of the users, for submission
       - "user_homes:/userhomes:ro"
       # Where to store all submissions
@@ -76,6 +74,8 @@ services:
       JUPYTERHUB_CLIENT_ID: grader-notebook
       # sqlalchemy string for the nbgrader database
       GRADER_DATABASE_STRING: postgres://grader:grader@postgres/grader
+      # API token for accessing the backend as grader
+      GRADER_API_TOKEN: just-another-secret-string
     volumes:
       # shared volume for the nbgrader content
       - grader_content:/home/jovyan/content
