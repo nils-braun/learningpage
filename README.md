@@ -43,13 +43,13 @@ Now you will see submissions showing up, but without grade so far.
 
 Do the batch autograding
 
-    docker-compose exec backend python3 autograde.py
+    docker-compose exec grader_notebook python3 autograde.py
 
 Then, call the feedback batch script:
 
-    docker-compose exec backend python3 feedback.py
+    docker-compose exec grader_notebook python3 feedback.py
 
-If you have manual grading in your assignments, it will output the ids you need to manually grade.
+If you have manual grading in your assignments, it will not create a feedback already.
 Go to
 
     http://127.0.0.1:8000/services/grader-notebook/formgrader/submissions/<id>
@@ -73,14 +73,6 @@ are updated accordingly.
 * backend: flask service for the API. Can be accessed via http://127.0.0.1:8000/services/learningpage, but needs a
   correct jupyterhub login cookie. Exchanges the user hoe folders with the jupyterhub component,
   to be able tu submit and access the notebooks of the users.
-
-## Open ToDos Backend:
-* handle multiple versions of assignments correctly during submit
-  Currently we assume that the notebook related to a assignment needs to be compared with exactly this
-  assignment. The way this is done, is that the assignment is looked up in the content database
-  based on the POST command the user calls.
-  However if there was an update, the notebook could in principle still be related to another assignment.
-  This needs to be handled.
 
 ## Backend
 
@@ -137,10 +129,12 @@ If an old submission was already graded and a new submission was submitted, only
 {
     date: date,
     maxScore: float,
+    score: float,
     graded: boolean
     notebooks: [{
         feedbackUrl: string,
         name: string, # name of the notebook
+        score: float,
         maxScore: float,
     }]
 }
