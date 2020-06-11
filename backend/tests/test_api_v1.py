@@ -142,6 +142,7 @@ class APITestCase(BaseTestCase):
                 "slug": submission["slug"],  # not tested on purpose
                 "date": submission["date"],  # not tested on purpose
                 "maxScore": 0.0,
+                "score": 0.0,
                 "graded": False,
                 "notebooks": [
                     {
@@ -149,7 +150,8 @@ class APITestCase(BaseTestCase):
                             "slug"
                         ],  # not tested on purpose
                         "name": "notebook.ipynb",
-                        "maxScore": 0,
+                        "maxScore": 0.0,
+                        "score": 0.0,
                         "feedbackUrl": submission["notebooks"][0][
                             "feedbackUrl"
                         ],  # not tested on purpose
@@ -244,7 +246,7 @@ class APITestCase(BaseTestCase):
         self.assert400(rv)
 
         # Add feedback = grade; correct reqest
-        data = {"score": 0.5, "feedback": (io.BytesIO(b"feedback"), "feedback.html")}
+        data = {"score": 0.5, "max_score": 1, "feedback": (io.BytesIO(b"feedback"), "feedback.html")}
 
         rv = self.client.post(
             f"/api/v1/feedback/{notebook_slug}",
@@ -258,8 +260,10 @@ class APITestCase(BaseTestCase):
         rv = self.client.get("/api/v1/content/content/submissions")
         self.assert200(rv)
 
-        self.assertEqual(rv.json[0]["notebooks"][0]["maxScore"], 0.5)
-        self.assertEqual(rv.json[0]["maxScore"], 0.5)
+        self.assertEqual(rv.json[0]["notebooks"][0]["maxScore"], 1.0)
+        self.assertEqual(rv.json[0]["notebooks"][0]["score"], 0.5)
+        self.assertEqual(rv.json[0]["maxScore"], 1.0)
+        self.assertEqual(rv.json[0]["score"], 0.5)
         self.assertEqual(rv.json[0]["graded"], True)
 
         # Feedback should be fetchable
@@ -296,6 +300,7 @@ class APITestCase(BaseTestCase):
         self.assertEqual(
             submission,
             {
+                "assignment_slug": "assignment",
                 "slug": submission["slug"],  # not tested on purpose
                 "notebooks": [
                     {
@@ -307,7 +312,7 @@ class APITestCase(BaseTestCase):
         )
 
         # now do the grading
-        data = {"score": 0.5, "feedback": (io.BytesIO(b"feedback"), "feedback.html")}
+        data = {"score": 0.5, "max_score": 1, "feedback": (io.BytesIO(b"feedback"), "feedback.html")}
         rv = self.client.post(
             f"/api/v1/feedback/{notebook_slug}",
             data=data,
