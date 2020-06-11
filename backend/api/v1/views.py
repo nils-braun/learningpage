@@ -303,6 +303,7 @@ def get_ungraded_submissions():
     return_dict = [
         {
             "slug": submission.slug,
+            "assignment_slug": submission.content.assignment_slug,
             "notebooks": [
                 {
                     "slug": notebook.slug,
