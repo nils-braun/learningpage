@@ -1,15 +1,13 @@
 import os
-import tempfile
 import logging
 import sys
-from shutil import rmtree, copyfile
-from traitlets.config.loader import Config
-from glob import glob
+import shutil
+from contextlib import contextmanager
 
-from nbgrader.exchange import ExchangeReleaseAssignment, ExchangeCollect, ExchangeSubmit
+import requests
+
 from nbgrader.converters import Autograde, GenerateFeedback
 from nbgrader.coursedir import CourseDirectory
-from nbgrader.auth import Authenticator
 
 from nbgrader.apps import NbGrader
 from nbgrader.api import Gradebook, MissingEntry
@@ -100,3 +98,41 @@ def generate_feedback(assignment_slug, student_slug):
         submission_dict["notebooks"] = [n.to_dict() for n in submission.notebooks]
 
         return submission_dict
+
+
+def get_ungraded_submissions():
+    api_token = os.environ.get("GRADER_API_TOKEN")
+    rv = requests.get("http://jupyterhub:8000/services/learningpage/api/v1/ungraded",
+                      headers={"Authorization": f"token {api_token}"})
+    rv.raise_for_status()
+    ungraded_submissions = rv.json()
+
+    return ungraded_submissions
+
+
+def download_notebook(notebook_slug, dowload_location):
+    api_token = os.environ.get("GRADER_API_TOKEN")
+    rv = requests.get(f"http://jupyterhub:8000/services/learningpage/api/v1/notebook/{notebook_slug}",
+                      headers={"Authorization": f"token {api_token}"})
+
+    with open(dowload_location, "wb") as f:
+        f.write(rv.content)
+
+
+def upload_feedback(notebook_slug, feedback_file, score, max_score):
+    api_token = os.environ.get("GRADER_API_TOKEN")
+    rv = requests.post(f"http://jupyterhub:8000/services/learningpage/api/v1/feedback/{notebook_slug}",
+                        headers={"Authorization": f"token {api_token}"},
+                        data={"score": score, "max_score": max_score},
+                        files={"feedback": open(feedback_file, "r").read()})
+    rv.raise_for_status()
+
+
+@contextmanager
+def created_folder(nbgrader_folder):
+    os.makedirs(nbgrader_folder, exist_ok=True)
+
+    try:
+        yield
+    finally:
+        shutil.rmtree(nbgrader_folder)
