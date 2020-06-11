@@ -148,12 +148,14 @@ def show_submissions(user, content_slug):
         {
             "slug": submission.slug,
             "date": submission.date,
+            "score": submission.score,
             "maxScore": submission.max_score,
             "graded": submission.graded,
             "notebooks": [
                 {
                     "slug": notebook.slug,
                     "name": notebook.name,
+                    "score": notebook.score,
                     "maxScore": notebook.max_score,
                     "feedbackUrl": get_feedback_url(
                         notebook_slug=notebook.slug, submission_slug=submission.slug
@@ -261,9 +263,15 @@ def add_feedback(notebook_slug):
     if score is None:
         abort(400)
 
+    max_score = request.form.get("max_score")
+
+    if max_score is None:
+        abort(400)
+
     feedback_file.save(feedback_filename)
 
-    notebook.max_score = score
+    notebook.score = score
+    notebook.max_score = max_score
     notebook.graded = True
     db.session.commit()
 

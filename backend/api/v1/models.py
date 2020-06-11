@@ -1,4 +1,7 @@
+from sqlalchemy.sql import expression
+
 from app import db
+
 
 IdentifierType = db.String(32)
 
@@ -163,6 +166,10 @@ class Submission(db.Model):
     content = db.relationship("Content")
 
     @property
+    def score(self):
+        return sum(n.score for n in self.notebooks)
+
+    @property
     def max_score(self):
         return sum(n.max_score for n in self.notebooks)
 
@@ -182,8 +189,9 @@ class Notebook(db.Model):
     submission_slug = db.Column(
         IdentifierType, db.ForeignKey("submissions.slug"), nullable=False
     )
+    score = db.Column(db.Float, nullable=False, default=0)
     max_score = db.Column(db.Float, nullable=False, default=0)
-    graded = db.Column(db.Boolean, nullable=False, default=False)
+    graded = db.Column(db.Boolean, nullable=True, default=False)
 
     submission = db.relationship("Submission", back_populates="notebooks")
 
