@@ -175,7 +175,11 @@ class Submission(db.Model):
 
     @property
     def graded(self):
-        return all(notebook.graded for notebook in self.notebooks) if self.notebooks else False
+        return (
+            all(notebook.graded for notebook in self.notebooks)
+            if self.notebooks
+            else False
+        )
 
     def __repr__(self):  # pragma: no cover
         return f"<Submission(user='{self.user}', maxScore={self.max_score})>"

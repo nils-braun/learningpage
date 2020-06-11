@@ -64,12 +64,15 @@ class APITestCase(BaseTestCase):
     def test_user(self):
         rv = self.client.get("/api/v1/user")
 
-        self.assertEqual(rv.json, {
-            "isAdmin": False,
-            "created": "created",
-            "lastActivity": "last_activity",
-            "name": "testing",
-        })
+        self.assertEqual(
+            rv.json,
+            {
+                "isAdmin": False,
+                "created": "created",
+                "lastActivity": "last_activity",
+                "name": "testing",
+            },
+        )
 
     def test_content(self):
         self.add_content()
@@ -246,7 +249,11 @@ class APITestCase(BaseTestCase):
         self.assert400(rv)
 
         # Add feedback = grade; correct reqest
-        data = {"score": 0.5, "max_score": 1, "feedback": (io.BytesIO(b"feedback"), "feedback.html")}
+        data = {
+            "score": 0.5,
+            "max_score": 1,
+            "feedback": (io.BytesIO(b"feedback"), "feedback.html"),
+        }
 
         rv = self.client.post(
             f"/api/v1/feedback/{notebook_slug}",
@@ -288,8 +295,9 @@ class APITestCase(BaseTestCase):
         self.assert200(rv)
 
         # Submission should be ungraded so far
-        rv = self.client.get("/api/v1/ungraded",
-            headers={"Authorization": "token grader"})
+        rv = self.client.get(
+            "/api/v1/ungraded", headers={"Authorization": "token grader"}
+        )
         self.assert200(rv)
 
         submissions = rv.json
@@ -312,7 +320,11 @@ class APITestCase(BaseTestCase):
         )
 
         # now do the grading
-        data = {"score": 0.5, "max_score": 1, "feedback": (io.BytesIO(b"feedback"), "feedback.html")}
+        data = {
+            "score": 0.5,
+            "max_score": 1,
+            "feedback": (io.BytesIO(b"feedback"), "feedback.html"),
+        }
         rv = self.client.post(
             f"/api/v1/feedback/{notebook_slug}",
             data=data,
@@ -322,8 +334,9 @@ class APITestCase(BaseTestCase):
         self.assert200(rv)
 
         # Submission should not show up
-        rv = self.client.get("/api/v1/ungraded",
-            headers={"Authorization": "token grader"})
+        rv = self.client.get(
+            "/api/v1/ungraded", headers={"Authorization": "token grader"}
+        )
         self.assert200(rv)
 
         self.assertEqual(rv.json, [])
@@ -342,17 +355,21 @@ class AuthorizationTestCase(BaseTestCase):
         rv = cmd(url)
         self.assert401(rv)
 
-        with patch('jupyterhub.services.auth.HubAuth._api_request') as mock_get:
+        with patch("jupyterhub.services.auth.HubAuth._api_request") as mock_get:
             # Make sure the jupyterhub returns nothing (= invalid token)
             # and also does not cache the result
             mock_get.return_value = None
             auth.cache.clear()
 
             rv = cmd(url, headers={auth.auth_header_name: "my-token"})
-            mock_get.assert_called_once_with('GET', 'http://127.0.0.1:8081/hub/api/authorizations/token/my-token', allow_404=True)
+            mock_get.assert_called_once_with(
+                "GET",
+                "http://127.0.0.1:8081/hub/api/authorizations/token/my-token",
+                allow_404=True,
+            )
             self.assert403(rv)
 
-        with patch('jupyterhub.services.auth.HubAuth._api_request') as mock_get:
+        with patch("jupyterhub.services.auth.HubAuth._api_request") as mock_get:
             # Make sure the jupyterhub returns nothing (= invalid token)
             # and also does not cache the result
             mock_get.return_value = None
@@ -360,7 +377,11 @@ class AuthorizationTestCase(BaseTestCase):
 
             self.client.set_cookie("", auth.cookie_name, "my-cookie")
             rv = cmd(url)
-            mock_get.assert_called_once_with('GET', 'http://127.0.0.1:8081/hub/api/authorizations/cookie/jupyterhub-services/my-cookie', allow_404=True)
+            mock_get.assert_called_once_with(
+                "GET",
+                "http://127.0.0.1:8081/hub/api/authorizations/cookie/jupyterhub-services/my-cookie",
+                allow_404=True,
+            )
             self.assert403(rv)
 
         # If everything is correct, it will not return an unauthenticated,

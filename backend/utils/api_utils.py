@@ -7,14 +7,12 @@ from jupyterhub.services.auth import HubAuth
 from werkzeug import exceptions
 
 
-auth = HubAuth(
-    api_token=os.environ.get('JUPYTERHUB_API_TOKEN', ""),
-    cache_max_age=60,
-)
+auth = HubAuth(api_token=os.environ.get("JUPYTERHUB_API_TOKEN", ""), cache_max_age=60,)
 
 
 def authenticated(f):
     """Decorator for authenticating with the Hub"""
+
     @wraps(f)
     def decorated(*args, **kwargs):
         cookie = request.cookies.get(auth.cookie_name)
@@ -43,6 +41,7 @@ def authenticated(f):
 
 def is_grader(f):
     """Decorator to check if the grader API token is set"""
+
     @wraps(f)
     def decorated(*args, **kwargs):
         auth_header = request.headers.get("Authorization")
@@ -64,17 +63,17 @@ def is_grader(f):
 
 class PrefixMiddleware(object):
     # from https://stackoverflow.com/questions/18967441/add-a-prefix-to-all-flask-routes
-    def __init__(self, app, prefix=''):
+    def __init__(self, app, prefix=""):
         self.app = app
         self.prefix = prefix
 
     def __call__(self, environ, start_response):
-        if environ['PATH_INFO'].startswith(self.prefix):
-            environ['PATH_INFO'] = environ['PATH_INFO'][len(self.prefix):]
-            environ['SCRIPT_NAME'] = self.prefix
+        if environ["PATH_INFO"].startswith(self.prefix):
+            environ["PATH_INFO"] = environ["PATH_INFO"][len(self.prefix) :]
+            environ["SCRIPT_NAME"] = self.prefix
             return self.app(environ, start_response)
         else:
-            start_response('404', [('Content-Type', 'text/plain')])
+            start_response("404", [("Content-Type", "text/plain")])
             return ["This url does not belong to the app.".encode()]
 
 
@@ -94,5 +93,3 @@ def get_storage_folder(submission_slug, assignment_slug):
 
 def slugify(*args):
     return hashlib.md5("_".join(map(str, args)).encode()).hexdigest()[:32]
-
-
