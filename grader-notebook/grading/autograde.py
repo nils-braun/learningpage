@@ -30,5 +30,5 @@ def main():
             autograde(assignment_slug, submission_slug)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": # pragma no cover
     main()

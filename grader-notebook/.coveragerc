@@ -1,0 +1,4 @@
+[run]
+branch = True
+source = grading
+omit = grading/test_*

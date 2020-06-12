@@ -22,7 +22,7 @@ def get_config():
     of the nbgrader application and use its config.
     """
     grader_app = NbGrader()
-    grader_app.initialize()
+    grader_app.initialize(argv=[])
     grader_app.notebook_dir = "." # TODO: needed?
 
     return grader_app.config
