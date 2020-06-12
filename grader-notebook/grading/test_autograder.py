@@ -17,7 +17,6 @@ class AutogradeTestCase(TestCase):
     def setUp(self):
         self.assignment_source = open("grading/tests/source.ipynb").read()
         self.assignment_student = open("grading/tests/student.ipynb").read()
-        self.assignment_autograded = open("grading/tests/autograded.ipynb").read()
 
         self.working_folder = tempfile.mkdtemp()
         self.old_pwd = os.getcwd()
@@ -70,11 +69,6 @@ c.CourseDirectory.db_url = "sqlite:///database.db"
         download_notebook.side_effect = download_mock
 
         main()
-
-        self.assertEqual(
-            open("autograded/submission/assignment/name.ipynb").read(),
-            self.assignment_autograded,
-        )
 
         c = get_config()
 
