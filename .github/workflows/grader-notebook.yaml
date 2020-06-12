@@ -27,7 +27,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         cd grader-notebook
-        pip install nbgrader==0.6.1 psycopg2
+        pip install nbgrader==0.6.1 psycopg2 black pytest pytest-coverage
     - name: Lint with black
       run: |
         black grader-notebook --check

@@ -24,13 +24,15 @@ class AutogradeTestCase(TestCase):
         os.chdir(self.working_folder)
 
         with open("nbgrader_config.py", "w") as f:
-            f.write(f"""
+            f.write(
+                f"""
 c = get_config()
 
 c.CourseDirectory.course_id = "course"
 c.CourseDirectory.root = "{self.working_folder}"
 c.CourseDirectory.db_url = "sqlite:///database.db"
-                """)
+                """
+            )
 
         # Prepare assignments in database
         os.makedirs("source/assignment")
@@ -57,11 +59,10 @@ c.CourseDirectory.db_url = "sqlite:///database.db"
             {
                 "slug": "submission",
                 "assignment_slug": "assignment",
-                "notebooks": [
-                    {"slug": "notebook", "name": "name.ipynb"}
-                ],
+                "notebooks": [{"slug": "notebook", "name": "name.ipynb"}],
             }
         ]
+
         def download_mock(notebook_slug, dowload_location):
             with open(dowload_location, "w") as f:
                 f.write(self.assignment_student)
@@ -70,7 +71,10 @@ c.CourseDirectory.db_url = "sqlite:///database.db"
 
         main()
 
-        self.assertEqual(open("autograded/submission/assignment/name.ipynb").read(), self.assignment_autograded)
+        self.assertEqual(
+            open("autograded/submission/assignment/name.ipynb").read(),
+            self.assignment_autograded,
+        )
 
         c = get_config()
 
@@ -85,4 +89,3 @@ c.CourseDirectory.db_url = "sqlite:///database.db"
 
             self.assertEqual(notebook.max_score, 100)
             self.assertEqual(notebook.score, 100)
-

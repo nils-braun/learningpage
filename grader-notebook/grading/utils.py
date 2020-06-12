@@ -23,7 +23,7 @@ def get_config():
     """
     grader_app = NbGrader()
     grader_app.initialize(argv=[])
-    grader_app.notebook_dir = "." # TODO: needed?
+    grader_app.notebook_dir = "."  # TODO: needed?
 
     return grader_app.config
 
@@ -78,7 +78,9 @@ def generate_feedback(assignment_slug, student_slug):
     with Gradebook(coursedir.db_url, coursedir.course_id) as gb:
         submission = gb.find_submission(assignment_slug, student_slug)
         if submission.needs_manual_grade:
-            print(f"Not creating feedback for {assignment_slug} - {student_slug} as it needs manual grading.")
+            print(
+                f"Not creating feedback for {assignment_slug} - {student_slug} as it needs manual grading."
+            )
             return
 
     # Generate the feedback and store it in the folder
@@ -102,8 +104,10 @@ def generate_feedback(assignment_slug, student_slug):
 
 def get_ungraded_submissions():
     api_token = os.environ.get("GRADER_API_TOKEN")
-    rv = requests.get("http://jupyterhub:8000/services/learningpage/api/v1/ungraded",
-                      headers={"Authorization": f"token {api_token}"})
+    rv = requests.get(
+        "http://jupyterhub:8000/services/learningpage/api/v1/ungraded",
+        headers={"Authorization": f"token {api_token}"},
+    )
     rv.raise_for_status()
     ungraded_submissions = rv.json()
 
@@ -112,8 +116,10 @@ def get_ungraded_submissions():
 
 def download_notebook(notebook_slug, dowload_location):
     api_token = os.environ.get("GRADER_API_TOKEN")
-    rv = requests.get(f"http://jupyterhub:8000/services/learningpage/api/v1/notebook/{notebook_slug}",
-                      headers={"Authorization": f"token {api_token}"})
+    rv = requests.get(
+        f"http://jupyterhub:8000/services/learningpage/api/v1/notebook/{notebook_slug}",
+        headers={"Authorization": f"token {api_token}"},
+    )
 
     with open(dowload_location, "wb") as f:
         f.write(rv.content)
@@ -121,10 +127,12 @@ def download_notebook(notebook_slug, dowload_location):
 
 def upload_feedback(notebook_slug, feedback_file, score, max_score):
     api_token = os.environ.get("GRADER_API_TOKEN")
-    rv = requests.post(f"http://jupyterhub:8000/services/learningpage/api/v1/feedback/{notebook_slug}",
-                        headers={"Authorization": f"token {api_token}"},
-                        data={"score": score, "max_score": max_score},
-                        files={"feedback": open(feedback_file, "r").read()})
+    rv = requests.post(
+        f"http://jupyterhub:8000/services/learningpage/api/v1/feedback/{notebook_slug}",
+        headers={"Authorization": f"token {api_token}"},
+        data={"score": score, "max_score": max_score},
+        files={"feedback": open(feedback_file, "r").read()},
+    )
     rv.raise_for_status()
 
 

@@ -4,7 +4,13 @@ from shutil import rmtree
 import requests
 from nbgrader.coursedir import CourseDirectory
 
-from utils import generate_feedback, get_config, get_ungraded_submissions, upload_feedback, created_folder
+from utils import (
+    generate_feedback,
+    get_config,
+    get_ungraded_submissions,
+    upload_feedback,
+    created_folder,
+)
 
 
 def main():
@@ -18,14 +24,19 @@ def main():
         assignment_slug = submission["assignment_slug"]
 
         # We choose the submission slug as the user
-        nbgrader_folder = coursedir.format_path(coursedir.feedback_directory, submission_slug, assignment_slug)
+        nbgrader_folder = coursedir.format_path(
+            coursedir.feedback_directory, submission_slug, assignment_slug
+        )
 
         with created_folder(nbgrader_folder):
             graded_submission = generate_feedback(assignment_slug, submission_slug)
             if not graded_submission:
                 continue
 
-            graded_notebooks = {notebook["name"]: notebook for notebook in graded_submission["notebooks"]}
+            graded_notebooks = {
+                notebook["name"]: notebook
+                for notebook in graded_submission["notebooks"]
+            }
 
             for notebook in submission["notebooks"]:
                 notebook_name = os.path.splitext(notebook["name"])[0]
