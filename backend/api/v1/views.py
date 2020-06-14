@@ -24,7 +24,7 @@ from utils.api_utils import (
     slugify,
     is_grader,
 )
-from .models import Content, Submission, Notebook, Course
+from .models import Content, Submission, Notebook, Course, ContentGroup
 from app import db
 
 
@@ -95,6 +95,29 @@ def show_course(course_slug):
                 ]
             } for content_group in course.content_groups
         ]
+    }
+    return jsonify(return_dict)
+
+
+@blueprint.route("/content_group/<content_group_slug>", methods=["GET"])
+def show_content_group(content_group_slug):
+    """
+    Get information on a specific content group.
+    """
+    content_group = ContentGroup.query.get_or_404(content_group_slug)
+
+    return_dict = {
+                "contentGroupSlug": content_group.slug,
+                "contentGroup": content_group.name,
+                "courseSlug": content_group.course.slug,
+                "course": content_group.course.name,
+                "contents": [
+                    {
+                        "slug": content.slug,
+                        "title": content.title,
+                        "description": content.description,
+                    } for content in content_group.contents
+                ]
     }
     return jsonify(return_dict)
 

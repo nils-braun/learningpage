@@ -79,7 +79,6 @@ class APITestCase(BaseTestCase):
 
         rv = self.client.get("/api/v1/course")
 
-        print(rv.json)
         self.assertEqual(
             rv.json,
             [{
@@ -106,7 +105,6 @@ class APITestCase(BaseTestCase):
 
         rv = self.client.get("/api/v1/course/course")
 
-        print(rv.json)
         self.assertEqual(
             rv.json,
             {
@@ -127,6 +125,34 @@ class APITestCase(BaseTestCase):
                 "course": "Course",
             },
         )
+
+        rv = self.client.get("/api/v1/course/other_course")
+        self.assert404(rv)
+
+    def test_content_group(self):
+        self.add_content()
+
+        rv = self.client.get("/api/v1/content_group/group")
+
+        self.assertEqual(
+            rv.json,
+            {
+                "contentGroup": "Group",
+                "contentGroupSlug": "group",
+                "courseSlug": "course",
+                "course": "Course",
+                "contents": [
+                    {
+                        "description": "description",
+                        "slug": "content",
+                        "title": "Content",
+                    }
+                ]
+            },
+        )
+
+        rv = self.client.get("/api/v1/content_group/other_group")
+        self.assert404(rv)
 
     def test_content(self):
         self.add_content()
