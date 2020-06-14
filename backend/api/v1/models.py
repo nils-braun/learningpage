@@ -82,6 +82,7 @@ class Course(db.Model):
     slug = db.Column(IdentifierType, primary_key=True)
     name = db.Column(db.String, nullable=False)
     # "*" for all or list of users separated by ","
+    # TODO: not implemented already
     access_string = db.Column(db.String, default="*", nullable=False)
     sort_number = db.Column(db.Integer, default=0, nullable=False)
 
