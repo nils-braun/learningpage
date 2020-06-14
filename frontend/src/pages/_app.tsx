@@ -1,3 +1,4 @@
+import 'react-multi-carousel/lib/styles.css';
 import '../styles/index.css'
 
 import { Provider } from 'react-redux'
