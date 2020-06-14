@@ -59,6 +59,7 @@ c.CourseDirectory.db_url = "sqlite:///database.db"
             {
                 "slug": "submission",
                 "assignment_slug": "assignment",
+                "user": "testing",
                 "notebooks": [{"slug": "notebook", "name": "name.ipynb"}],
             }
         ]

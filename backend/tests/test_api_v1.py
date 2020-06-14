@@ -392,6 +392,7 @@ class APITestCase(BaseTestCase):
             {
                 "assignment_slug": "assignment",
                 "slug": submission["slug"],  # not tested on purpose
+                "user": "testing",
                 "notebooks": [
                     {
                         "slug": notebook_slug,  # not tested on purpose

@@ -395,6 +395,7 @@ def get_ungraded_submissions():
         {
             "slug": submission.slug,
             "assignment_slug": submission.content.assignment_slug,
+            "user": submission.user,
             "notebooks": [
                 {"slug": notebook.slug, "name": notebook.name,}
                 for notebook in submission.notebooks

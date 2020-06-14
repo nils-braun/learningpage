@@ -39,7 +39,7 @@ def _run_app(app):
     app.log.removeHandler(handler)
 
 
-def autograde(assignment_slug, student_slug):
+def autograde(assignment_slug, student_slug, user):
     c = get_config()
     c.CourseDirectory.assignment_id = assignment_slug
     c.CourseDirectory.student_id = student_slug
@@ -50,7 +50,7 @@ def autograde(assignment_slug, student_slug):
         # Store the submission in the database
 
         # TODO: add name etc.?
-        gb.update_or_create_student(student_slug)
+        gb.update_or_create_student(student_slug, last_name=user)
         gb.update_or_create_submission(assignment_slug, student_slug)
 
         # TODO: can we find out if grading already happened?

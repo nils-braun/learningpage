@@ -22,6 +22,7 @@ def main():
     for submission in ungraded_submissions:
         submission_slug = submission["slug"]
         assignment_slug = submission["assignment_slug"]
+        student_name = submission["user"]
 
         # We choose the submission slug as the user
         nbgrader_folder = coursedir.format_path(
@@ -38,7 +39,7 @@ def main():
                     os.path.join(nbgrader_folder, submitted_file["name"]),
                 )
 
-            autograde(assignment_slug, submission_slug)
+            autograde(assignment_slug, submission_slug, student_name)
 
 
 if __name__ == "__main__":  # pragma no cover
