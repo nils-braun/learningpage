@@ -72,6 +72,33 @@ def show_courses():
     return jsonify(return_dict)
 
 
+@blueprint.route("/course/<course_slug>", methods=["GET"])
+def show_course(course_slug):
+    """
+    Get information on a specific courses.
+    """
+    course = Course.query.get_or_404(course_slug)
+
+    return_dict = {
+        "courseSlug": course.slug,
+        "course": course.name,
+        "contentGroups": [
+            {
+                "contentGroupSlug": content_group.slug,
+                "contentGroup": content_group.name,
+                "contents": [
+                    {
+                        "slug": content.slug,
+                        "title": content.title,
+                        "description": content.description,
+                    } for content in content_group.contents
+                ]
+            } for content_group in course.content_groups
+        ]
+    }
+    return jsonify(return_dict)
+
+
 @blueprint.route("/content/<content_slug>", methods=["GET"])
 def show_content(content_slug):
     """

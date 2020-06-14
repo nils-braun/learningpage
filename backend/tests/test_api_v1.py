@@ -101,6 +101,33 @@ class APITestCase(BaseTestCase):
             }],
         )
 
+    def test_course(self):
+        self.add_content()
+
+        rv = self.client.get("/api/v1/course/course")
+
+        print(rv.json)
+        self.assertEqual(
+            rv.json,
+            {
+                "contentGroups": [
+                    {
+                        "contentGroup": "Group",
+                        "contentGroupSlug": "group",
+                        "contents": [
+                            {
+                                "description": "description",
+                                "slug": "content",
+                                "title": "Content",
+                            }
+                        ]
+                    }
+                ],
+                "courseSlug": "course",
+                "course": "Course",
+            },
+        )
+
     def test_content(self):
         self.add_content()
 
