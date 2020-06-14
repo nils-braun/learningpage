@@ -81,23 +81,25 @@ class APITestCase(BaseTestCase):
 
         self.assertEqual(
             rv.json,
-            [{
-                "contentGroups": [
-                    {
-                        "contentGroup": "Group",
-                        "contentGroupSlug": "group",
-                        "contents": [
-                            {
-                                "description": "description",
-                                "slug": "content",
-                                "title": "Content",
-                            }
-                        ]
-                    }
-                ],
-                "courseSlug": "course",
-                "course": "Course",
-            }],
+            [
+                {
+                    "contentGroups": [
+                        {
+                            "contentGroup": "Group",
+                            "contentGroupSlug": "group",
+                            "contents": [
+                                {
+                                    "description": "description",
+                                    "slug": "content",
+                                    "title": "Content",
+                                }
+                            ],
+                        }
+                    ],
+                    "courseSlug": "course",
+                    "course": "Course",
+                }
+            ],
         )
 
     def test_course(self):
@@ -118,7 +120,7 @@ class APITestCase(BaseTestCase):
                                 "slug": "content",
                                 "title": "Content",
                             }
-                        ]
+                        ],
                     }
                 ],
                 "courseSlug": "course",
@@ -147,7 +149,7 @@ class APITestCase(BaseTestCase):
                         "slug": "content",
                         "title": "Content",
                     }
-                ]
+                ],
             },
         )
 

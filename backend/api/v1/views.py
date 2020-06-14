@@ -52,23 +52,28 @@ def show_courses():
     """
     Get information on the all courses
     """
-    return_dict = [{
-        "courseSlug": course.slug,
-        "course": course.name,
-        "contentGroups": [
-            {
-                "contentGroupSlug": content_group.slug,
-                "contentGroup": content_group.name,
-                "contents": [
-                    {
-                        "slug": content.slug,
-                        "title": content.title,
-                        "description": content.description,
-                    } for content in content_group.contents
-                ]
-            } for content_group in course.content_groups
-        ]
-    } for course in Course.query.all()]
+    return_dict = [
+        {
+            "courseSlug": course.slug,
+            "course": course.name,
+            "contentGroups": [
+                {
+                    "contentGroupSlug": content_group.slug,
+                    "contentGroup": content_group.name,
+                    "contents": [
+                        {
+                            "slug": content.slug,
+                            "title": content.title,
+                            "description": content.description,
+                        }
+                        for content in content_group.contents
+                    ],
+                }
+                for content_group in course.content_groups
+            ],
+        }
+        for course in Course.query.all()
+    ]
     return jsonify(return_dict)
 
 
@@ -91,10 +96,12 @@ def show_course(course_slug):
                         "slug": content.slug,
                         "title": content.title,
                         "description": content.description,
-                    } for content in content_group.contents
-                ]
-            } for content_group in course.content_groups
-        ]
+                    }
+                    for content in content_group.contents
+                ],
+            }
+            for content_group in course.content_groups
+        ],
     }
     return jsonify(return_dict)
 
@@ -107,17 +114,18 @@ def show_content_group(content_group_slug):
     content_group = ContentGroup.query.get_or_404(content_group_slug)
 
     return_dict = {
-                "contentGroupSlug": content_group.slug,
-                "contentGroup": content_group.name,
-                "courseSlug": content_group.course.slug,
-                "course": content_group.course.name,
-                "contents": [
-                    {
-                        "slug": content.slug,
-                        "title": content.title,
-                        "description": content.description,
-                    } for content in content_group.contents
-                ]
+        "contentGroupSlug": content_group.slug,
+        "contentGroup": content_group.name,
+        "courseSlug": content_group.course.slug,
+        "course": content_group.course.name,
+        "contents": [
+            {
+                "slug": content.slug,
+                "title": content.title,
+                "description": content.description,
+            }
+            for content in content_group.contents
+        ],
     }
     return jsonify(return_dict)
 
