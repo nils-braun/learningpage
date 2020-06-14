@@ -1,5 +1,6 @@
 import { Action } from "redux";
 import { AppThunk } from "../types";
+import { getContentSubmissionLink } from "../utils";
 
 export const SUBMIT_COURSE = 'SUBMIT_COURSE';
 export interface SubmitCourseAction extends Action {
@@ -25,9 +26,9 @@ const submitCourseFailure = (): Action => {
         type: SUBMIT_COURSE_FAILURE
     };
 }
-export const thunkSubmitCourse = (slug: string): AppThunk => async (dispatch, _, { apiBase }) => {
+export const thunkSubmitCourse = (slug: string): AppThunk => async (dispatch) => {
     dispatch(submitCourse(slug));
-    await fetch(`${apiBase}/content/${slug}/submission`, { method: 'POST', credentials: 'include' })
+    await fetch(getContentSubmissionLink(slug), { method: 'POST', credentials: 'include' })
         .then(res => res.json())
         .then(() => dispatch(submitCourseSuccess()))
         .catch((err) => {
