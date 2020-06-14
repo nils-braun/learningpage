@@ -8,16 +8,16 @@ from subprocess import check_call
 from nbgrader.coursedir import CourseDirectory
 from nbgrader.api import Gradebook
 
-from utils import get_config
-from autograde import main
+from grading.utils import get_config
+from grading.autograde import main
 
 
-@patch("autograde.get_ungraded_submissions")
+@patch("grading.autograde.get_ungraded_submissions")
 class AutogradeTestCase(TestCase):
     def setUp(self):
         test_dir = os.path.dirname(__file__)
-        self.assignment_source = open(os.path.join(test_dir, 'tests/source.ipynb')).read()
-        self.assignment_student = open(os.path.join(test_dir, 'tests/student.ipynb')).read()
+        self.assignment_source = open(os.path.join(test_dir, 'source.ipynb')).read()
+        self.assignment_student = open(os.path.join(test_dir, 'student.ipynb')).read()
 
         self.working_folder = tempfile.mkdtemp()
         self.old_pwd = os.getcwd()
@@ -51,7 +51,7 @@ c.CourseDirectory.db_url = "sqlite:///database.db"
     def test_no_submissions(self, ungraded_submission):
         main()
 
-    @patch("autograde.download_notebook")
+    @patch("grading.autograde.download_notebook")
     def test_single_submission(self, download_notebook, ungraded_submission):
         check_call(["nbgrader", "generate_assignment", "assignment"])
 

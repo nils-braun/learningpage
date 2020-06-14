@@ -4,7 +4,7 @@ import requests
 
 from nbgrader.coursedir import CourseDirectory
 
-from utils import (
+from grading.utils import (
     autograde,
     get_config,
     get_ungraded_submissions,
