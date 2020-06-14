@@ -24,7 +24,7 @@ from utils.api_utils import (
     slugify,
     is_grader,
 )
-from .models import Content, Submission, Notebook
+from .models import Content, Submission, Notebook, Course
 from app import db
 
 
@@ -44,6 +44,31 @@ def show_user(user):
         "lastActivity": user["last_activity"],
         "name": user["name"],
     }
+    return jsonify(return_dict)
+
+
+@blueprint.route("/course", methods=["GET"])
+def show_courses():
+    """
+    Get information on the all courses
+    """
+    return_dict = [{
+        "courseSlug": course.slug,
+        "course": course.name,
+        "contentGroups": [
+            {
+                "contentGroupSlug": content_group.slug,
+                "contentGroup": content_group.name,
+                "contents": [
+                    {
+                        "slug": content.slug,
+                        "title": content.title,
+                        "description": content.description,
+                    } for content in content_group.contents
+                ]
+            } for content_group in course.content_groups
+        ]
+    } for course in Course.query.all()]
     return jsonify(return_dict)
 
 
