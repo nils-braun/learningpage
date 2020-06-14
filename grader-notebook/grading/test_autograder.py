@@ -15,8 +15,9 @@ from autograde import main
 @patch("autograde.get_ungraded_submissions")
 class AutogradeTestCase(TestCase):
     def setUp(self):
-        self.assignment_source = open("grading/tests/source.ipynb").read()
-        self.assignment_student = open("grading/tests/student.ipynb").read()
+        test_dir = os.path.dirname(__file__)
+        self.assignment_source = open(os.path.join(test_dir, 'tests/source.ipynb')).read()
+        self.assignment_student = open(os.path.join(test_dir, 'tests/student.ipynb')).read()
 
         self.working_folder = tempfile.mkdtemp()
         self.old_pwd = os.getcwd()
