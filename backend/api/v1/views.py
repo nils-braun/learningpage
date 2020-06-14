@@ -78,7 +78,7 @@ def show_content(content_slug):
     Return non-user specific information on the content
     with the given content_slug.
     """
-    content = Content.query.filter_by(slug=content_slug).first_or_404()
+    content = Content.query.get_or_404(content_slug)
     has_assignment = bool(content.assignment_slug)
 
     return_dict = {
@@ -131,7 +131,7 @@ def start_content(user, content_slug):
 
     If all fails, abort with a 404.
     """
-    content = Content.query.filter_by(slug=content_slug).first_or_404()
+    content = Content.query.get_or_404(content_slug)
     assignment_slug = content.assignment_slug
 
     if not assignment_slug:
@@ -205,7 +205,7 @@ def add_submission(user, content_slug):
     * creating a new entry in the submission database
     * copying the contents from the user folder to the storage folder
     """
-    content = Content.query.filter_by(slug=content_slug).first_or_404()
+    content = Content.query.get_or_404(content_slug)
     assignment_slug = content.assignment_slug
 
     student_slug = user["name"]
@@ -249,7 +249,7 @@ def get_feedback(user, notebook_slug):
     """
     Return the feedback for the given notebook_slug if it is present.
     """
-    notebook = Notebook.query.filter_by(slug=notebook_slug).first_or_404()
+    notebook = Notebook.query.get_or_404(notebook_slug)
     submission_slug = notebook.submission_slug
     assignment_slug = notebook.submission.content.assignment_slug
 
@@ -271,7 +271,7 @@ def add_feedback(notebook_slug):
     """
     Add feedback for a given notebook
     """
-    notebook = Notebook.query.filter_by(slug=notebook_slug).first_or_404()
+    notebook = Notebook.query.get_or_404(notebook_slug)
     submission_slug = notebook.submission_slug
     assignment_slug = notebook.submission.content.assignment_slug
 
@@ -309,7 +309,7 @@ def get_notebook(notebook_slug):
     """
     Return the notebook for the given notebook_slug if it is present.
     """
-    notebook = Notebook.query.filter_by(slug=notebook_slug).first_or_404()
+    notebook = Notebook.query.get_or_404(notebook_slug)
     submission_slug = notebook.submission_slug
     assignment_slug = notebook.submission.content.assignment_slug
 
