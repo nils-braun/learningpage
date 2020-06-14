@@ -7,6 +7,7 @@ body {
 
 .btn {
   @apply font-bold py-2 px-8 rounded;
+  appearance: button;
 }
 .btn-blue {
   @apply bg-blue-500 text-white;
