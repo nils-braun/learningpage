@@ -44,7 +44,7 @@ def show_user(user):
         "lastActivity": user["last_activity"],
         "name": user["name"],
     }
-    return jsonify(return_dict)
+    return return_dict
 
 
 @blueprint.route("/content/<content_slug>", methods=["GET"])
@@ -87,7 +87,7 @@ def show_content(content_slug):
         ],
     }
 
-    return jsonify(return_dict)
+    return return_dict
 
 
 @blueprint.route("/content/<content_slug>/start", methods=["GET"])
@@ -215,7 +215,7 @@ def add_submission(user, content_slug):
 
     db.session.commit()
 
-    return jsonify({"status": "ok"}), 201
+    return {"status": "ok"}, 201
 
 
 @blueprint.route("/feedback/<notebook_slug>", methods=["GET"])
@@ -275,7 +275,7 @@ def add_feedback(notebook_slug):
     notebook.graded = True
     db.session.commit()
 
-    return jsonify({"status": "ok"}), 201
+    return {"status": "ok"}, 201
 
 
 @blueprint.route("/notebook/<notebook_slug>")
