@@ -21,6 +21,7 @@ export interface HeaderOwnProps {
     subtitle: string;
     hasAssignment: boolean;
     startLink: string;
+    allowSubmit: boolean;
 }
 
 type HeaderPropsFromRedux = ConnectedProps<typeof connector>;
@@ -47,7 +48,7 @@ const Header: SFC<HeaderProps> = (props) => (
                     <a href={props.startLink} className="btn btn-white">Start</a>
                     <div>10.000 enrolled</div>
                 </div>
-                {props.hasAssignment && 
+                {props.hasAssignment && props.allowSubmit && 
                     <div className="inline-block">
                         <button className="btn btn-white" 
                             onClick={() => props.handleSubmit(props.slug)}

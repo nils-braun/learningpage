@@ -54,13 +54,29 @@ export type CourseFact = {
 export type CoursePageContent = ApiCoursePage;
 
 export interface RootState {
-    user: any;
+    user: UserState;
     course: CourseState;
 }
 
 export interface CourseState {
     submissionFetching: boolean;
     submissionsCount: number;
+}
+
+export interface UserApi {
+    created: string;
+    isAdmin: boolean;
+    lastActivity: string;
+    name: string;
+}
+
+export interface UserState {
+    fetching: boolean;
+    created: string | null;
+    isAdmin: boolean;
+    lastActivity: string | null;
+    name: string;
+    isAnonymous: boolean;
 }
 
 export type AppThunk<ReturnType = void> = ThunkAction<
