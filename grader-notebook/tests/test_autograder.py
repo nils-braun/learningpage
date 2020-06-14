@@ -16,8 +16,8 @@ from grading.autograde import main
 class AutogradeTestCase(TestCase):
     def setUp(self):
         test_dir = os.path.dirname(__file__)
-        self.assignment_source = open(os.path.join(test_dir, 'source.ipynb')).read()
-        self.assignment_student = open(os.path.join(test_dir, 'student.ipynb')).read()
+        self.assignment_source = open(os.path.join(test_dir, "source.ipynb")).read()
+        self.assignment_student = open(os.path.join(test_dir, "student.ipynb")).read()
 
         self.working_folder = tempfile.mkdtemp()
         self.old_pwd = os.getcwd()

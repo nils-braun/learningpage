@@ -8,16 +8,27 @@ IdentifierType = db.String(32)
 ContentInstructorAssociations = db.Table(
     "content_instructor_association",
     db.metadata,
-    db.Column("content_slug", IdentifierType, db.ForeignKey("contents.slug"), nullable=False),
-    db.Column("instructor_slug", IdentifierType, db.ForeignKey("instructors.slug"), nullable=False),
+    db.Column(
+        "content_slug", IdentifierType, db.ForeignKey("contents.slug"), nullable=False
+    ),
+    db.Column(
+        "instructor_slug",
+        IdentifierType,
+        db.ForeignKey("instructors.slug"),
+        nullable=False,
+    ),
 )
 
 
 ContentSkillAssociations = db.Table(
     "content_skill_association",
     db.metadata,
-    db.Column("content_slug", IdentifierType, db.ForeignKey("contents.slug"), nullable=False),
-    db.Column("skill_slug", IdentifierType, db.ForeignKey("skills.slug"), nullable=False),
+    db.Column(
+        "content_slug", IdentifierType, db.ForeignKey("contents.slug"), nullable=False
+    ),
+    db.Column(
+        "skill_slug", IdentifierType, db.ForeignKey("skills.slug"), nullable=False
+    ),
 )
 
 
