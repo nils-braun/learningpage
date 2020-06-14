@@ -20,6 +20,7 @@ export interface HeaderOwnProps {
     title: string;
     subtitle: string;
     hasAssignment: boolean;
+    startLink: string;
 }
 
 type HeaderPropsFromRedux = ConnectedProps<typeof connector>;
@@ -44,7 +45,7 @@ const Header: SFC<HeaderProps> = (props) => {
                 </div>
                 <div>
                     <div className="inline-block mr-8">
-                        <button className="btn btn-white">Start</button>
+                        <a href={props.startLink} className="btn btn-white">Start</a>
                         <div>10.000 enrolled</div>
                     </div>
                     {props.hasAssignment && 

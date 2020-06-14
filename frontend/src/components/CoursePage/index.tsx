@@ -6,6 +6,7 @@ import Header from './subcomponents/Header';
 import AboutSection from './subcomponents/AboutSection';
 import InstructorsSection from './subcomponents/InstructorsSection';
 import AnchorRow from './subcomponents/AnchorRow';
+import { getContentStartLink } from '../../utils';
 
 export interface CoursePageProps {
     page: CoursePageContent;
@@ -19,6 +20,7 @@ const CoursePage: SFC<CoursePageProps> = ({ page }) => {
                 title={page.title}
                 subtitle={page.subtitle}
                 hasAssignment={page.hasAssignment}
+                startLink={getContentStartLink(page.slug)}
             />
             <AnchorRow />
             <AboutSection
