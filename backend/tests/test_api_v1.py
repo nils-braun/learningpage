@@ -128,7 +128,7 @@ class APITestCase(BaseTestCase):
 
         # Submission should be successful
         rv = self.client.post("/api/v1/content/content/submissions")
-        self.assert200(rv)
+        self.assertEqual(rv.status_code, 201)
         self.assertEqual(rv.json, {"status": "ok"})
 
         # Submission should be created and in the list
@@ -220,7 +220,7 @@ class APITestCase(BaseTestCase):
 
         # Create and get the submissions
         rv = self.client.post("/api/v1/content/content/submissions")
-        self.assert200(rv)
+        self.assertEqual(rv.status_code, 201)
 
         rv = self.client.get("/api/v1/content/content/submissions")
         self.assert200(rv)
@@ -261,7 +261,7 @@ class APITestCase(BaseTestCase):
             content_type="multipart/form-data",
             headers={"Authorization": "token grader"},
         )
-        self.assert200(rv)
+        self.assertEqual(rv.status_code, 201)
         self.assertEqual(rv.json, {"status": "ok"})
 
         rv = self.client.get("/api/v1/content/content/submissions")
@@ -292,7 +292,7 @@ class APITestCase(BaseTestCase):
 
         # Submission should be successful
         rv = self.client.post("/api/v1/content/content/submissions")
-        self.assert200(rv)
+        self.assertEqual(rv.status_code, 201)
 
         # Submission should be ungraded so far
         rv = self.client.get(
@@ -331,7 +331,7 @@ class APITestCase(BaseTestCase):
             content_type="multipart/form-data",
             headers={"Authorization": "token grader"},
         )
-        self.assert200(rv)
+        self.assertEqual(rv.status_code, 201)
 
         # Submission should not show up
         rv = self.client.get(
@@ -389,7 +389,7 @@ class AuthorizationTestCase(BaseTestCase):
         current_app.config["TESTING"] = True
 
         rv = cmd(url)
-        self.assertIn(rv.status_code, [200, 404])
+        self.assertIn(rv.status_code, [200, 201, 404])
 
     def _test_grader_api(self, url, post=False):
         if post:
