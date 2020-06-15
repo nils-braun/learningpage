@@ -1,7 +1,7 @@
 FROM python:3.8.2
 
-RUN mkdir -p /shared \
-    && chmod a+rw -R /shared
+RUN mkdir -p /storage \
+    && chmod a+rw -R /storage
 
 RUN useradd flask -d /home/flask -m -u 1000
 USER flask

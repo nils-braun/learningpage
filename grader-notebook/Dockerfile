@@ -11,11 +11,11 @@ RUN conda install --quiet --yes \
     fix-permissions $CONDA_DIR && \
     fix-permissions /home/$NB_USER
 
-RUN mkdir -p //home/$NB_USER/content \
-    && chmod a+rw -R //home/$NB_USER/content
+RUN mkdir -p /home/$NB_USER/content \
+    && chmod a+rw -R /home/$NB_USER/content
 
 ADD nbgrader_config.py .
-ADD grading .
+ADD grading /home/$NB_USER/grading
 
 ENTRYPOINT [ "jupyterhub-singleuser" ]
 CMD [ "--group=graders" ]

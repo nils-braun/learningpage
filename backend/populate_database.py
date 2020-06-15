@@ -6,6 +6,7 @@ def main():
     app = create_app()
     app.app_context().push()
 
+    db.create_all()
     skills = [
         Skill(slug=slug, name=name)
         for slug, name in [
@@ -31,12 +32,12 @@ def main():
         ),
     ]
 
-    course = Course(slug="dex", name="DEX")
+    course = Course(slug="course", name="Course")
     content_group = ContentGroup(slug="prep", name="Preparations", course=course)
     content = Content(
-        slug="pandas-io",
-        title="Pandas IO",
-        subtitle="An introduction to data input and ouput with Pandas in Python",
+        slug="my_course",
+        title="My Course",
+        subtitle="An introduction to data input and output with Pandas in Python",
         description="""Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor""",
         learnings="You will learn how to read data from various sources\n"
         "Learn about how to process data and reshape it\n"
@@ -46,7 +47,7 @@ def main():
         skills=skills,
         content_group=content_group,
         instructors=instructors,
-        assignment_slug="pandas-io",
+        assignment_slug="my_course",
     )
 
     facts = [
@@ -66,6 +67,7 @@ def main():
         db.session.commit()
     except:
         db.session.rollback()
+        raise
 
 
 if __name__ == "__main__":

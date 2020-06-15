@@ -50,6 +50,8 @@ services:
     volumes:
       # Where to store the homes of the users
       - "user_homes:/home"
+      # Mount an example submission
+      - ./example_data/submission:/example/student/my_course/:ro
     restart: unless-stopped
   # The database server to store the nbgrader and content database
   postgres:
@@ -81,6 +83,8 @@ services:
     volumes:
       # shared volume for the nbgrader content
       - grader_content:/home/jovyan/content
+      # Mount an example assignment
+      - ./example_data/source:/home/jovyan/content/source/my_course/:ro
     depends_on:
       # Wait for postgres to come up, otherwise the database is not ready
       - postgres
