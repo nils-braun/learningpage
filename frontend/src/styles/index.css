@@ -21,3 +21,6 @@ body {
   @apply bg-gray-200;
 }
 
+.z-1001 {
+  z-index: 1001;
+}
