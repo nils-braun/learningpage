@@ -39,6 +39,9 @@ services:
       - ./frontend/src:/app/src:cached
     environment:
       BASE_PATH: /services/learningpage-frontend
+      BACKEND_BASE_PATH: /services/learningpage
+      BACKEND_INTERNAL_HOST: "backend:5000"
+      JUPYTERHUB_HOST: "localhost:8000"
     restart: unless-stopped
   # Jupyterhub to control it all
   jupyterhub:

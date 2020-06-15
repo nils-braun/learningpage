@@ -1,6 +1,6 @@
-import CoursePage, { CoursePageOwnProps } from '../../components/CoursePage';
-import { apiBaseUrl } from '../../utils';
-import { ApiCoursePage } from '../../types';
+import CoursePage, { CoursePageOwnProps } from '../../../components/CoursePage';
+import { apiBaseUrl } from '../../../utils';
+import { ApiCoursePage } from '../../../types';
 import { GetServerSideProps } from 'next';
 
 export const getServerSideProps: GetServerSideProps<CoursePageOwnProps> = async ({ res, query }) => {

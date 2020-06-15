@@ -1,3 +1,6 @@
+import { ThunkAction } from "redux-thunk";
+import { Action } from "redux";
+
 export interface ApiCoursePage {
     contentGroup: string;
     contentGroupSlug: string;
@@ -49,3 +52,36 @@ export type CourseFact = {
 }
 
 export type CoursePageContent = ApiCoursePage;
+
+export interface RootState {
+    user: UserState;
+    course: CourseState;
+}
+
+export interface CourseState {
+    submissionFetching: boolean;
+    submissionsCount: number;
+}
+
+export interface UserApi {
+    created: string;
+    isAdmin: boolean;
+    lastActivity: string;
+    name: string;
+}
+
+export interface UserState {
+    fetching: boolean;
+    created: string | null;
+    isAdmin: boolean;
+    lastActivity: string | null;
+    name: string;
+    isAnonymous: boolean;
+}
+
+export type AppThunk<ReturnType = void> = ThunkAction<
+  ReturnType,
+  RootState,
+  unknown,
+  Action<string>
+>;
