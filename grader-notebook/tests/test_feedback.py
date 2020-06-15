@@ -33,7 +33,13 @@ class FeedbackTestCase(TestCase):
 
     @patch("grading.autograde.get_ungraded_submissions")
     @patch("grading.autograde.download_notebook")
-    def test_single_submission(self, download_notebook, ungraded_submission_autograde, upload_feedback, ungraded_submission):
+    def test_single_submission(
+        self,
+        download_notebook,
+        ungraded_submission_autograde,
+        upload_feedback,
+        ungraded_submission,
+    ):
         check_call(["nbgrader", "generate_assignment", "assignment"])
 
         ungraded_submission.return_value = [
@@ -61,13 +67,21 @@ class FeedbackTestCase(TestCase):
 
         coursedir = CourseDirectory(config=c)
 
-        assert not os.path.exists(os.path.join(coursedir.format_path(
-                coursedir.autograded_directory, "submission", "assignment"
-        ), "name.ipynb"))
+        assert not os.path.exists(
+            os.path.join(
+                coursedir.format_path(
+                    coursedir.autograded_directory, "submission", "assignment"
+                ),
+                "name.ipynb",
+            )
+        )
 
-        feedback_file = os.path.join(coursedir.format_path(
+        feedback_file = os.path.join(
+            coursedir.format_path(
                 coursedir.feedback_directory, "submission", "assignment"
-        ), "name.html")
+            ),
+            "name.html",
+        )
         assert not os.path.exists(feedback_file)
 
         upload_feedback.assert_called_once_with("notebook", feedback_file, 100.0, 100.0)
@@ -77,4 +91,3 @@ class FeedbackTestCase(TestCase):
         main()
 
         upload_feedback.assert_not_called()
-

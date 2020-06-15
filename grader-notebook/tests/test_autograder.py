@@ -40,9 +40,14 @@ class AutogradeTestCase(TestCase):
 
         coursedir = CourseDirectory(config=c)
 
-        assert os.path.exists(os.path.join(coursedir.format_path(
-                coursedir.autograded_directory, "submission", "assignment"
-        ), "name.ipynb"))
+        assert os.path.exists(
+            os.path.join(
+                coursedir.format_path(
+                    coursedir.autograded_directory, "submission", "assignment"
+                ),
+                "name.ipynb",
+            )
+        )
 
         with Gradebook(coursedir.db_url, coursedir.course_id) as gb:
             submission = gb.find_submission("assignment", "submission")
