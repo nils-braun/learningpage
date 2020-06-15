@@ -70,6 +70,8 @@ services:
       JUPYTERHUB_API_TOKEN: even-more-secret-key
       # Where to find the jupyterhub API
       JUPYTERHUB_API_URL: http://jupyterhub:8081/hub/api
+      # Where to find the backend API
+      BACKEND_API_URL: http://jupyterhub:8000/services/learningpage/api/v1
       # OAuth client ID. Has to be the same as in the jupyterhub config.
       JUPYTERHUB_CLIENT_ID: grader-notebook
       # sqlalchemy string for the nbgrader database

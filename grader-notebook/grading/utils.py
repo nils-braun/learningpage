@@ -14,6 +14,9 @@ from nbgrader.api import Gradebook, MissingEntry
 from nbgrader.apps.api import NbGraderAPI
 
 
+BACKEND_API_URL = os.environ.get("BACKEND_API_URL")
+
+
 def get_config():
     """
     Return the current nbgrader config.
@@ -113,8 +116,7 @@ def generate_feedback(assignment_slug, student_slug):
 def get_ungraded_submissions():
     api_token = os.environ.get("GRADER_API_TOKEN")
     rv = requests.get(
-        "http://jupyterhub:8000/services/learningpage/api/v1/ungraded",
-        headers={"Authorization": f"token {api_token}"},
+        f"{BACKEND_API_URL}/ungraded", headers={"Authorization": f"token {api_token}"},
     )
     rv.raise_for_status()
     ungraded_submissions = rv.json()
@@ -125,7 +127,7 @@ def get_ungraded_submissions():
 def download_notebook(notebook_slug, dowload_location):
     api_token = os.environ.get("GRADER_API_TOKEN")
     rv = requests.get(
-        f"http://jupyterhub:8000/services/learningpage/api/v1/notebook/{notebook_slug}",
+        f"{BACKEND_API_URL}/notebook/{notebook_slug}",
         headers={"Authorization": f"token {api_token}"},
     )
 
@@ -136,7 +138,7 @@ def download_notebook(notebook_slug, dowload_location):
 def upload_feedback(notebook_slug, feedback_file, score, max_score):
     api_token = os.environ.get("GRADER_API_TOKEN")
     rv = requests.post(
-        f"http://jupyterhub:8000/services/learningpage/api/v1/feedback/{notebook_slug}",
+        f"{BACKEND_API_URL}/feedback/{notebook_slug}",
         headers={"Authorization": f"token {api_token}"},
         data={"score": score, "max_score": max_score},
         files={"feedback": open(feedback_file, "r").read()},
