@@ -3,7 +3,7 @@ FROM jupyter/base-notebook
 # Install nbgrader as additional dependency
 # All needed extensions are automatically enabled
 RUN conda install --quiet --yes \
-    'nbgrader=0.6.1' \
+    'nbgrader' \
     'psycopg2' && \
     conda clean --all -f -y && \
     npm cache clean --force && \
@@ -11,10 +11,11 @@ RUN conda install --quiet --yes \
     fix-permissions $CONDA_DIR && \
     fix-permissions /home/$NB_USER
 
-RUN mkdir -p //home/$NB_USER/content \
-    && chmod a+rw -R //home/$NB_USER/content
+RUN mkdir -p /home/$NB_USER/content \
+    && chmod a+rw -R /home/$NB_USER/content
 
 ADD nbgrader_config.py .
+ADD grading /home/$NB_USER/grading
 
 ENTRYPOINT [ "jupyterhub-singleuser" ]
 CMD [ "--group=graders" ]

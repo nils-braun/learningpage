@@ -13,17 +13,17 @@ services:
       JUPYTERHUB_API_URL: http://jupyterhub:8081/hub/api
       # sqlalchemy string for the content database
       CONTENT_DATABASE_STRING: postgres://content:content@postgres/content
-      # sqlalchemy string for the nbgrader database
-      GRADER_DATABASE_STRING: postgres://grader:grader@postgres/grader
       # Where to look for the userhome directories
       USER_BASE_FOLDER: /userhomes
+      # Where to store the submissions and feedbacks
+      STORAGE_BASE_FOLDER: /storage
+      # API token for the grader
+      GRADER_API_TOKEN: just-another-secret-string
     volumes:
-      # shared volume for the nbgrader content
-      - grader_content:/var/lib/content
-      # for local testing: bind-mount the app folder
-      - ./backend:/app:ro
       # Where to find the home of the users, for submission
-      - "user_homes:/userhomes"
+      - "user_homes:/userhomes:ro"
+      # Where to store all submissions
+      - "storage:/storage"
     depends_on:
       # Wait for postgres to come up, otherwise the database is not ready
       - postgres
@@ -50,6 +50,8 @@ services:
     volumes:
       # Where to store the homes of the users
       - "user_homes:/home"
+      # Mount an example submission
+      - ./example_data/submission:/example/student/my_course/:ro
     restart: unless-stopped
   # The database server to store the nbgrader and content database
   postgres:
@@ -70,13 +72,19 @@ services:
       JUPYTERHUB_API_TOKEN: even-more-secret-key
       # Where to find the jupyterhub API
       JUPYTERHUB_API_URL: http://jupyterhub:8081/hub/api
+      # Where to find the backend API
+      BACKEND_API_URL: http://jupyterhub:8000/services/learningpage/api/v1
       # OAuth client ID. Has to be the same as in the jupyterhub config.
       JUPYTERHUB_CLIENT_ID: grader-notebook
       # sqlalchemy string for the nbgrader database
       GRADER_DATABASE_STRING: postgres://grader:grader@postgres/grader
+      # API token for accessing the backend as grader
+      GRADER_API_TOKEN: just-another-secret-string
     volumes:
       # shared volume for the nbgrader content
       - grader_content:/home/jovyan/content
+      # Mount an example assignment
+      - ./example_data/source:/home/jovyan/content/source/my_course/:ro
     depends_on:
       # Wait for postgres to come up, otherwise the database is not ready
       - postgres
@@ -84,3 +92,4 @@ services:
 volumes:
   grader_content:
   user_homes:
+  storage:

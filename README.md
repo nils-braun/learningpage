@@ -8,19 +8,24 @@ Start all components:
 
     docker-compose up -d
 
-Log into http://127.0.0.1:8000/services/grader-notebook/formgrader with "grader:grader" and create (and generate) an assignment
-called "pandas-io".
-Download the notebooks in the preview.
+### Prepare the database
 
-Create a test database entry for "pandas-io"
+Create a test database entry for "my_course"
 
     docker-compose exec backend python3 populate_database.py
 
-Log into the jupyterhub instance at http://127.0.0.1:8000 with the "student:student"
-(you might need to logout again).
+And an nbgrader assignment for this course (you can also do this via the web UI with the user:password grader:grader)
+
+    docker-compose exec grader-notebook nbgrader generate_assignment my_course
+
+The notebook files for this assignment are already preinstalled in the running container.
+
+### Test the API
+
+Log into the jupyterhub instance at http://127.0.0.1:8000 with "student:student".
 After login, you should be able to access the API, e.g. under
 
-    http://127.0.0.1:8000/services/learningpage/api/v1/content/pandas-io
+    http://127.0.0.1:8000/services/learningpage/api/v1/content/my_course
 
 or
 
@@ -28,39 +33,43 @@ or
 
 However, you will not have any submission already:
 
-    http://127.0.0.1:8000/services/learningpage/api/v1/content/pandas-io/submissions
+    http://127.0.0.1:8000/services/learningpage/api/v1/content/my_course/submissions
 
-Now go back to the notebook server under http://127.0.0.1:8000, create a folder "pandas-io" and
-upload the notebook(s) you downloaded earlier.
-Feel free to actually do some exercises.
+### Do a submission
 
-Then call a POST on
+An example submission file is already preinstalled in the container, you just need to copy it:
+
+    docker-compose exec jupyterhub cp /example/student/my_course /home/student/my_course -r
+
+Call a POST on
 
     http://127.0.0.1:8000/services/learningpage/api/v1/content/pandas-io/submissions
 
 with the correct cookie.
 Now you will see submissions showing up, but without grade so far.
 
+    http://127.0.0.1:8000/services/learningpage/api/v1/content/my_course/submissions
+
 Do the batch autograding
 
-    docker-compose exec backend python3 autograde.py
+    docker-compose exec grader-notebook python3 -m grading.autograde
 
 Then, call the feedback batch script:
 
-    docker-compose exec backend python3 feedback.py
+    docker-compose exec grader_notebook python3 -m grading.feedback
 
-If you have manual grading in your assignments, it will output the ids you need to manually grade.
-Go to
+If you have manual grading in your assignments, it will not create a feedback already.
+Log in with "grader:grader" (you might need to logout again) and go to
 
-    http://127.0.0.1:8000/services/grader-notebook/formgrader/submissions/<id>
+    http://127.0.0.1:8000/services/grader-notebook/formgrader/
 
-for each of them and do the grading.
+to do the grading.
 
 After that, call the feedback script again.
 
-Now, the shown submissions on
+Now, the shown submissions on (for "student:student")
 
-    http://127.0.0.1:8000/services/learningpage/api/v1/content/pandas-io/submissions
+    http://127.0.0.1:8000/services/learningpage/api/v1/content/my_course/submissions
 
 are updated accordingly.
 
@@ -73,14 +82,6 @@ are updated accordingly.
 * backend: flask service for the API. Can be accessed via http://127.0.0.1:8000/services/learningpage, but needs a
   correct jupyterhub login cookie. Exchanges the user hoe folders with the jupyterhub component,
   to be able tu submit and access the notebooks of the users.
-
-## Open ToDos Backend:
-* handle multiple versions of assignments correctly during submit
-  Currently we assume that the notebook related to a assignment needs to be compared with exactly this
-  assignment. The way this is done, is that the assignment is looked up in the content database
-  based on the POST command the user calls.
-  However if there was an update, the notebook could in principle still be related to another assignment.
-  This needs to be handled.
 
 ## Backend
 
@@ -137,10 +138,12 @@ If an old submission was already graded and a new submission was submitted, only
 {
     date: date,
     maxScore: float,
+    score: float,
     graded: boolean
     notebooks: [{
         feedbackUrl: string,
         name: string, # name of the notebook
+        score: float,
         maxScore: float,
     }]
 }
