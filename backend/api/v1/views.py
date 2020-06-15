@@ -24,7 +24,7 @@ from utils.api_utils import (
     slugify,
     is_grader,
 )
-from .models import Content, Submission, Notebook
+from .models import Content, Submission, Notebook, Course, ContentGroup
 from app import db
 
 
@@ -44,6 +44,89 @@ def show_user(user):
         "lastActivity": user["last_activity"],
         "name": user["name"],
     }
+    return return_dict
+
+
+@blueprint.route("/course", methods=["GET"])
+def show_courses():
+    """
+    Get information on the all courses
+    """
+    return_dict = [
+        {
+            "courseSlug": course.slug,
+            "course": course.name,
+            "contentGroups": [
+                {
+                    "contentGroupSlug": content_group.slug,
+                    "contentGroup": content_group.name,
+                    "contents": [
+                        {
+                            "slug": content.slug,
+                            "title": content.title,
+                            "description": content.description,
+                        }
+                        for content in content_group.contents
+                    ],
+                }
+                for content_group in course.content_groups
+            ],
+        }
+        for course in Course.query.all()
+    ]
+    return jsonify(return_dict)
+
+
+@blueprint.route("/course/<course_slug>", methods=["GET"])
+def show_course(course_slug):
+    """
+    Get information on a specific courses.
+    """
+    course = Course.query.get_or_404(course_slug)
+
+    return_dict = {
+        "courseSlug": course.slug,
+        "course": course.name,
+        "contentGroups": [
+            {
+                "contentGroupSlug": content_group.slug,
+                "contentGroup": content_group.name,
+                "contents": [
+                    {
+                        "slug": content.slug,
+                        "title": content.title,
+                        "description": content.description,
+                    }
+                    for content in content_group.contents
+                ],
+            }
+            for content_group in course.content_groups
+        ],
+    }
+    return jsonify(return_dict)
+
+
+@blueprint.route("/content_group/<content_group_slug>", methods=["GET"])
+def show_content_group(content_group_slug):
+    """
+    Get information on a specific content group.
+    """
+    content_group = ContentGroup.query.get_or_404(content_group_slug)
+
+    return_dict = {
+        "contentGroupSlug": content_group.slug,
+        "contentGroup": content_group.name,
+        "courseSlug": content_group.course.slug,
+        "course": content_group.course.name,
+        "contents": [
+            {
+                "slug": content.slug,
+                "title": content.title,
+                "description": content.description,
+            }
+            for content in content_group.contents
+        ],
+    }
     return jsonify(return_dict)
 
 
@@ -53,7 +136,7 @@ def show_content(content_slug):
     Return non-user specific information on the content
     with the given content_slug.
     """
-    content = Content.query.filter_by(slug=content_slug).first_or_404()
+    content = Content.query.get_or_404(content_slug)
     has_assignment = bool(content.assignment_slug)
 
     return_dict = {
@@ -87,7 +170,7 @@ def show_content(content_slug):
         ],
     }
 
-    return jsonify(return_dict)
+    return return_dict
 
 
 @blueprint.route("/content/<content_slug>/start", methods=["GET"])
@@ -106,7 +189,7 @@ def start_content(user, content_slug):
 
     If all fails, abort with a 404.
     """
-    content = Content.query.filter_by(slug=content_slug).first_or_404()
+    content = Content.query.get_or_404(content_slug)
     assignment_slug = content.assignment_slug
 
     if not assignment_slug:
@@ -180,7 +263,7 @@ def add_submission(user, content_slug):
     * creating a new entry in the submission database
     * copying the contents from the user folder to the storage folder
     """
-    content = Content.query.filter_by(slug=content_slug).first_or_404()
+    content = Content.query.get_or_404(content_slug)
     assignment_slug = content.assignment_slug
 
     student_slug = user["name"]
@@ -215,7 +298,7 @@ def add_submission(user, content_slug):
 
     db.session.commit()
 
-    return jsonify({"status": "ok"})
+    return {"status": "ok"}, 201
 
 
 @blueprint.route("/feedback/<notebook_slug>", methods=["GET"])
@@ -224,7 +307,7 @@ def get_feedback(user, notebook_slug):
     """
     Return the feedback for the given notebook_slug if it is present.
     """
-    notebook = Notebook.query.filter_by(slug=notebook_slug).first_or_404()
+    notebook = Notebook.query.get_or_404(notebook_slug)
     submission_slug = notebook.submission_slug
     assignment_slug = notebook.submission.content.assignment_slug
 
@@ -246,7 +329,7 @@ def add_feedback(notebook_slug):
     """
     Add feedback for a given notebook
     """
-    notebook = Notebook.query.filter_by(slug=notebook_slug).first_or_404()
+    notebook = Notebook.query.get_or_404(notebook_slug)
     submission_slug = notebook.submission_slug
     assignment_slug = notebook.submission.content.assignment_slug
 
@@ -275,7 +358,7 @@ def add_feedback(notebook_slug):
     notebook.graded = True
     db.session.commit()
 
-    return jsonify({"status": "ok"})
+    return {"status": "ok"}, 201
 
 
 @blueprint.route("/notebook/<notebook_slug>")
@@ -284,7 +367,7 @@ def get_notebook(notebook_slug):
     """
     Return the notebook for the given notebook_slug if it is present.
     """
-    notebook = Notebook.query.filter_by(slug=notebook_slug).first_or_404()
+    notebook = Notebook.query.get_or_404(notebook_slug)
     submission_slug = notebook.submission_slug
     assignment_slug = notebook.submission.content.assignment_slug
 
@@ -312,6 +395,7 @@ def get_ungraded_submissions():
         {
             "slug": submission.slug,
             "assignment_slug": submission.content.assignment_slug,
+            "user": submission.user,
             "notebooks": [
                 {"slug": notebook.slug, "name": notebook.name,}
                 for notebook in submission.notebooks

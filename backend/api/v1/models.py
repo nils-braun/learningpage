@@ -8,16 +8,27 @@ IdentifierType = db.String(32)
 ContentInstructorAssociations = db.Table(
     "content_instructor_association",
     db.metadata,
-    db.Column("content_slug", IdentifierType, db.ForeignKey("contents.slug")),
-    db.Column("instructor_slug", IdentifierType, db.ForeignKey("instructors.slug")),
+    db.Column(
+        "content_slug", IdentifierType, db.ForeignKey("contents.slug"), nullable=False
+    ),
+    db.Column(
+        "instructor_slug",
+        IdentifierType,
+        db.ForeignKey("instructors.slug"),
+        nullable=False,
+    ),
 )
 
 
 ContentSkillAssociations = db.Table(
     "content_skill_association",
     db.metadata,
-    db.Column("content_slug", IdentifierType, db.ForeignKey("contents.slug")),
-    db.Column("skill_slug", IdentifierType, db.ForeignKey("skills.slug")),
+    db.Column(
+        "content_slug", IdentifierType, db.ForeignKey("contents.slug"), nullable=False
+    ),
+    db.Column(
+        "skill_slug", IdentifierType, db.ForeignKey("skills.slug"), nullable=False
+    ),
 )
 
 
@@ -82,6 +93,7 @@ class Course(db.Model):
     slug = db.Column(IdentifierType, primary_key=True)
     name = db.Column(db.String, nullable=False)
     # "*" for all or list of users separated by ","
+    # TODO: not implemented already
     access_string = db.Column(db.String, default="*", nullable=False)
     sort_number = db.Column(db.Integer, default=0, nullable=False)
 
@@ -195,7 +207,7 @@ class Notebook(db.Model):
     )
     score = db.Column(db.Float, nullable=False, default=0)
     max_score = db.Column(db.Float, nullable=False, default=0)
-    graded = db.Column(db.Boolean, nullable=True, default=False)
+    graded = db.Column(db.Boolean, nullable=False, server_default="f", default=False)
 
     submission = db.relationship("Submission", back_populates="notebooks")
 

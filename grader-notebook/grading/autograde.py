@@ -4,7 +4,7 @@ import requests
 
 from nbgrader.coursedir import CourseDirectory
 
-from utils import (
+from grading.utils import (
     autograde,
     get_config,
     get_ungraded_submissions,
@@ -22,14 +22,20 @@ def main():
     for submission in ungraded_submissions:
         submission_slug = submission["slug"]
         assignment_slug = submission["assignment_slug"]
+        student_name = submission["user"]
 
         # We choose the submission slug as the user
         nbgrader_folder = coursedir.format_path(
             coursedir.submitted_directory, submission_slug, assignment_slug
         )
 
-        # TODO: check if there is already a grade. Is this a problem? -> Yes! We should definitely check before
-        # TODO: we should add real names to the users later
+        autograder_folder = coursedir.format_path(
+            coursedir.autograded_directory, submission_slug, assignment_slug
+        )
+
+        if os.path.exists(autograder_folder) and os.listdir(autograder_folder):
+            # There is already an autograde -> continue
+            continue
 
         with created_folder(nbgrader_folder):
             for submitted_file in submission["notebooks"]:
@@ -38,7 +44,7 @@ def main():
                     os.path.join(nbgrader_folder, submitted_file["name"]),
                 )
 
-            autograde(assignment_slug, submission_slug)
+            autograde(assignment_slug, submission_slug, student_name)
 
 
 if __name__ == "__main__":  # pragma no cover

@@ -74,6 +74,88 @@ class APITestCase(BaseTestCase):
             },
         )
 
+    def test_courses(self):
+        self.add_content()
+
+        rv = self.client.get("/api/v1/course")
+
+        self.assertEqual(
+            rv.json,
+            [
+                {
+                    "contentGroups": [
+                        {
+                            "contentGroup": "Group",
+                            "contentGroupSlug": "group",
+                            "contents": [
+                                {
+                                    "description": "description",
+                                    "slug": "content",
+                                    "title": "Content",
+                                }
+                            ],
+                        }
+                    ],
+                    "courseSlug": "course",
+                    "course": "Course",
+                }
+            ],
+        )
+
+    def test_course(self):
+        self.add_content()
+
+        rv = self.client.get("/api/v1/course/course")
+
+        self.assertEqual(
+            rv.json,
+            {
+                "contentGroups": [
+                    {
+                        "contentGroup": "Group",
+                        "contentGroupSlug": "group",
+                        "contents": [
+                            {
+                                "description": "description",
+                                "slug": "content",
+                                "title": "Content",
+                            }
+                        ],
+                    }
+                ],
+                "courseSlug": "course",
+                "course": "Course",
+            },
+        )
+
+        rv = self.client.get("/api/v1/course/other_course")
+        self.assert404(rv)
+
+    def test_content_group(self):
+        self.add_content()
+
+        rv = self.client.get("/api/v1/content_group/group")
+
+        self.assertEqual(
+            rv.json,
+            {
+                "contentGroup": "Group",
+                "contentGroupSlug": "group",
+                "courseSlug": "course",
+                "course": "Course",
+                "contents": [
+                    {
+                        "description": "description",
+                        "slug": "content",
+                        "title": "Content",
+                    }
+                ],
+            },
+        )
+
+        rv = self.client.get("/api/v1/content_group/other_group")
+        self.assert404(rv)
+
     def test_content(self):
         self.add_content()
 
@@ -128,7 +210,7 @@ class APITestCase(BaseTestCase):
 
         # Submission should be successful
         rv = self.client.post("/api/v1/content/content/submissions")
-        self.assert200(rv)
+        self.assertEqual(rv.status_code, 201)
         self.assertEqual(rv.json, {"status": "ok"})
 
         # Submission should be created and in the list
@@ -220,7 +302,7 @@ class APITestCase(BaseTestCase):
 
         # Create and get the submissions
         rv = self.client.post("/api/v1/content/content/submissions")
-        self.assert200(rv)
+        self.assertEqual(rv.status_code, 201)
 
         rv = self.client.get("/api/v1/content/content/submissions")
         self.assert200(rv)
@@ -261,7 +343,7 @@ class APITestCase(BaseTestCase):
             content_type="multipart/form-data",
             headers={"Authorization": "token grader"},
         )
-        self.assert200(rv)
+        self.assertEqual(rv.status_code, 201)
         self.assertEqual(rv.json, {"status": "ok"})
 
         rv = self.client.get("/api/v1/content/content/submissions")
@@ -292,7 +374,7 @@ class APITestCase(BaseTestCase):
 
         # Submission should be successful
         rv = self.client.post("/api/v1/content/content/submissions")
-        self.assert200(rv)
+        self.assertEqual(rv.status_code, 201)
 
         # Submission should be ungraded so far
         rv = self.client.get(
@@ -310,6 +392,7 @@ class APITestCase(BaseTestCase):
             {
                 "assignment_slug": "assignment",
                 "slug": submission["slug"],  # not tested on purpose
+                "user": "testing",
                 "notebooks": [
                     {
                         "slug": notebook_slug,  # not tested on purpose
@@ -331,7 +414,7 @@ class APITestCase(BaseTestCase):
             content_type="multipart/form-data",
             headers={"Authorization": "token grader"},
         )
-        self.assert200(rv)
+        self.assertEqual(rv.status_code, 201)
 
         # Submission should not show up
         rv = self.client.get(
@@ -389,7 +472,7 @@ class AuthorizationTestCase(BaseTestCase):
         current_app.config["TESTING"] = True
 
         rv = cmd(url)
-        self.assertIn(rv.status_code, [200, 404])
+        self.assertIn(rv.status_code, [200, 201, 404])
 
     def _test_grader_api(self, url, post=False):
         if post:

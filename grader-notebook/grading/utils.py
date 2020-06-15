@@ -14,6 +14,9 @@ from nbgrader.api import Gradebook, MissingEntry
 from nbgrader.apps.api import NbGraderAPI
 
 
+BACKEND_API_URL = os.environ.get("BACKEND_API_URL")
+
+
 def get_config():
     """
     Return the current nbgrader config.
@@ -39,7 +42,7 @@ def _run_app(app):
     app.log.removeHandler(handler)
 
 
-def autograde(assignment_slug, student_slug):
+def autograde(assignment_slug, student_slug, user):
     c = get_config()
     c.CourseDirectory.assignment_id = assignment_slug
     c.CourseDirectory.student_id = student_slug
@@ -48,13 +51,16 @@ def autograde(assignment_slug, student_slug):
 
     with Gradebook(coursedir.db_url, coursedir.course_id) as gb:
         # Store the submission in the database
+        gb.update_or_create_student(student_slug, last_name=user)
 
-        # TODO: add name etc.?
-        gb.update_or_create_student(student_slug)
+        try:
+            # If there is already an entry, do not continue
+            gb.find_submission(assignment_slug, student_slug)
+            return
+        except MissingEntry:
+            pass
+
         gb.update_or_create_submission(assignment_slug, student_slug)
-
-        # TODO: can we find out if grading already happened?
-        # can we then skip this part?
 
     # Use the input in <course root>/submitted for the given assignment and studen
     # and create a submission in the database as well as store the results in the database.
@@ -76,7 +82,12 @@ def generate_feedback(assignment_slug, student_slug):
 
     # If manual grading is needed, we can not export it already!
     with Gradebook(coursedir.db_url, coursedir.course_id) as gb:
-        submission = gb.find_submission(assignment_slug, student_slug)
+        try:
+            submission = gb.find_submission(assignment_slug, student_slug)
+        except MissingEntry:
+            # no submission in the database? Ok, autograding has not happened so far
+            return
+
         if submission.needs_manual_grade:
             print(
                 f"Not creating feedback for {assignment_slug} - {student_slug} as it needs manual grading."
@@ -105,8 +116,7 @@ def generate_feedback(assignment_slug, student_slug):
 def get_ungraded_submissions():
     api_token = os.environ.get("GRADER_API_TOKEN")
     rv = requests.get(
-        "http://jupyterhub:8000/services/learningpage/api/v1/ungraded",
-        headers={"Authorization": f"token {api_token}"},
+        f"{BACKEND_API_URL}/ungraded", headers={"Authorization": f"token {api_token}"},
     )
     rv.raise_for_status()
     ungraded_submissions = rv.json()
@@ -117,7 +127,7 @@ def get_ungraded_submissions():
 def download_notebook(notebook_slug, dowload_location):
     api_token = os.environ.get("GRADER_API_TOKEN")
     rv = requests.get(
-        f"http://jupyterhub:8000/services/learningpage/api/v1/notebook/{notebook_slug}",
+        f"{BACKEND_API_URL}/notebook/{notebook_slug}",
         headers={"Authorization": f"token {api_token}"},
     )
 
@@ -128,7 +138,7 @@ def download_notebook(notebook_slug, dowload_location):
 def upload_feedback(notebook_slug, feedback_file, score, max_score):
     api_token = os.environ.get("GRADER_API_TOKEN")
     rv = requests.post(
-        f"http://jupyterhub:8000/services/learningpage/api/v1/feedback/{notebook_slug}",
+        f"{BACKEND_API_URL}/feedback/{notebook_slug}",
         headers={"Authorization": f"token {api_token}"},
         data={"score": score, "max_score": max_score},
         files={"feedback": open(feedback_file, "r").read()},
