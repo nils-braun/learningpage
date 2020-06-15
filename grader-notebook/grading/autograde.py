@@ -29,8 +29,13 @@ def main():
             coursedir.submitted_directory, submission_slug, assignment_slug
         )
 
-        # TODO: check if there is already a grade. Is this a problem? -> Yes! We should definitely check before
-        # TODO: we should add real names to the users later
+        autograder_folder = coursedir.format_path(
+            coursedir.autograded_directory, submission_slug, assignment_slug
+        )
+
+        if os.path.exists(autograder_folder) and os.listdir(autograder_folder):
+            # There is already an autograde -> continue
+            continue
 
         with created_folder(nbgrader_folder):
             for submitted_file in submission["notebooks"]:

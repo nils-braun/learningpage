@@ -48,13 +48,16 @@ def autograde(assignment_slug, student_slug, user):
 
     with Gradebook(coursedir.db_url, coursedir.course_id) as gb:
         # Store the submission in the database
-
-        # TODO: add name etc.?
         gb.update_or_create_student(student_slug, last_name=user)
-        gb.update_or_create_submission(assignment_slug, student_slug)
 
-        # TODO: can we find out if grading already happened?
-        # can we then skip this part?
+        try:
+            # If there is already an entry, do not continue
+            gb.find_submission(assignment_slug, student_slug)
+            return
+        except MissingEntry:
+            pass
+
+        gb.update_or_create_submission(assignment_slug, student_slug)
 
     # Use the input in <course root>/submitted for the given assignment and studen
     # and create a submission in the database as well as store the results in the database.
@@ -76,7 +79,12 @@ def generate_feedback(assignment_slug, student_slug):
 
     # If manual grading is needed, we can not export it already!
     with Gradebook(coursedir.db_url, coursedir.course_id) as gb:
-        submission = gb.find_submission(assignment_slug, student_slug)
+        try:
+            submission = gb.find_submission(assignment_slug, student_slug)
+        except MissingEntry:
+            # no submission in the database? Ok, autograding has not happened so far
+            return
+
         if submission.needs_manual_grade:
             print(
                 f"Not creating feedback for {assignment_slug} - {student_slug} as it needs manual grading."

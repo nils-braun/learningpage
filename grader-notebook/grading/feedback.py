@@ -4,7 +4,7 @@ from shutil import rmtree
 import requests
 from nbgrader.coursedir import CourseDirectory
 
-from utils import (
+from grading.utils import (
     generate_feedback,
     get_config,
     get_ungraded_submissions,
@@ -28,6 +28,14 @@ def main():
             coursedir.feedback_directory, submission_slug, assignment_slug
         )
 
+        autograder_folder = coursedir.format_path(
+            coursedir.autograded_directory, submission_slug, assignment_slug
+        )
+
+        if not os.path.exists(autograder_folder) or not os.listdir(autograder_folder):
+            # No files in the autograder folder -> continue
+            continue
+
         with created_folder(nbgrader_folder):
             graded_submission = generate_feedback(assignment_slug, submission_slug)
             if not graded_submission:
@@ -49,6 +57,8 @@ def main():
                 max_score = graded_notebook["max_score"]
 
                 upload_feedback(notebook_slug, feedback_file, score, max_score)
+
+            rmtree(autograder_folder)
 
 
 if __name__ == "__main__":
